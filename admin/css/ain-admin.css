@@ -1,0 +1,380 @@
+/**
+ * All of the CSS for your admin-specific functionality should be
+ * included in this file.
+ */
+
+/* Header and Navigation */
+
+.ain-admin-page a {
+	color: #0783be;
+}
+
+.ain-admin-page p.description {
+	clear: both;
+	font-size: 12px;
+	font-style: normal;
+	margin-bottom: 10px;
+}
+
+.ain-admin-page .notice.is-dismissible {
+	margin-top: 20px;
+}
+
+.ain-admin-page #wpcontent {
+	line-height: 140%;
+}
+
+#wpcontent .ain-admin-toolbar {
+	box-sizing: border-box;
+	margin-left: -20px;
+	padding-top: 16px;
+	padding-right: 32px;
+	padding-bottom: 16px;
+	padding-left: 32px;
+}
+
+.ain-admin-toolbar {
+	position: unset;
+	top: 32px;
+	height: 72px;
+	z-index: 800;
+	background: #344054;
+	color: #98a2b3;
+}
+
+.ain-admin-toolbar .ain-admin-toolbar-inner {
+	display: flex;
+	justify-content: space-between;
+	align-content: center;
+	align-items: center;
+	max-width: 100%;
+}
+
+.ain-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
+	display: flex;
+	align-items: center;
+}
+
+.ain-admin-toolbar .ain-logo {
+	display: flex;
+	margin-right: 24px;
+	text-decoration: none;
+}
+
+.ain-admin-toolbar .ain-logo img {
+	display: block;
+	height: 40px;
+	line-height: 0%;
+}
+
+.ain-admin-toolbar .ain-admin-toolbar-inner .ain-nav-promo-wrap {
+	display: flex;
+	align-items: center;
+}
+
+.ain-nav-promo-wrap span {
+	font-size: 8px;
+	color: white;
+	display: block;
+	opacity: 0.82;
+	line-height: 14px;
+}
+
+.ain-nav-promo-wrap img {
+	max-width: 94px;
+	opacity: 0.82;
+}
+
+.ain-nav-row-logo:hover img {
+	opacity: 1;
+}
+
+.ain-admin-toolbar .ain-admin-toolbar-inner .ain-nav-row-logo {
+	display: block;
+	margin-left: 24px;
+}
+
+acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
+	display: flex;
+	align-items: center;
+}
+
+.ain-admin-toolbar .ain-logo {
+	display: flex;
+	margin-right: 24px;
+	text-decoration: none;
+}
+
+.ain-admin-toolbar h2 {
+	display: none;
+	color: #f9fafb;
+}
+
+.ain-admin-page .ain-admin-toolbar .ain-tab {
+	font-size: 13px;
+}
+
+.ain-admin-toolbar .ain-tab {
+	display: flex;
+	align-items: center;
+	box-sizing: border-box;
+	min-height: 40px;
+	margin-right: 8px;
+	padding-top: 8px;
+	padding-right: 16px;
+	padding-bottom: 8px;
+	padding-left: 16px;
+	border-width: 1px;
+	border-style: solid;
+	border-color: transparent;
+	border-radius: 6px;
+	color: #98a2b3;
+	text-decoration: none;
+}
+
+.ain-admin-toolbar .ain-tab.is-active {
+	background-color: #475467;
+	color: #fff;
+}
+
+.ain-admin-toolbar .ain-tab:hover {
+	background-color: #475467;
+	color: #f9fafb;
+}
+
+/* pro */
+
+.ain-admin-toolbar .ain-logo .ain-pro-label {
+	margin-left: 8px;
+}
+
+.ain-pro-label {
+	display: inline-flex;
+	align-items: center;
+	min-height: 22px;
+	padding-right: 8px;
+	padding-left: 8px;
+	background: linear-gradient(90.52deg, #3e8bff 0.44%, #a45cff 113.3%);
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+	border: none;
+	border-radius: 100px;
+	font-size: 11px;
+	text-transform: uppercase;
+	text-decoration: none;
+	color: #fff;
+}
+
+.ain-headerbar {
+	display: flex;
+	align-items: center;
+	position: sticky;
+	top: 32px;
+	z-index: 700;
+	box-sizing: border-box;
+	min-height: 72px;
+	margin-left: -20px;
+	padding-top: 8px;
+	padding-right: 32px;
+	padding-bottom: 8px;
+	padding-left: 32px;
+	background-color: #fff;
+	box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.1);
+}
+
+.ain-headerbar h1 {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 0 16px 0 0;
+	padding: 0;
+	font-size: 21px;
+	font-weight: 400;
+	color: #344054;
+}
+
+.wrap {
+	margin-left: 12px;
+}
+
+.limit-width {
+	max-width: 856px;
+}
+
+/* Form elements */
+
+/* Group / Box / Sections */
+
+.ain-box {
+	border: none;
+	border-radius: 8px;
+	box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.1);
+	margin: 20px 0;
+	background: #ffffff;
+	border: 1px solid #ddd;
+	position: relative;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+	padding: 4px 22px;
+}
+
+/* Form Labels */
+
+.form-table th {
+	padding-top: 26px;
+}
+
+/* Elements: input, textarea, select */
+
+.ain-admin-page input[type="text"]:read-only {
+	background-color: #f9fafb;
+	color: #98a2b3;
+}
+
+.ain-admin-page input[type="text"],
+.ain-admin-page input[type="search"],
+.ain-admin-page input[type="number"],
+.ain-admin-page textarea,
+.ain-admin-page select {
+	box-sizing: border-box;
+	height: 40px;
+	padding-right: 12px;
+	padding-left: 12px;
+	background-color: #fff;
+	border-color: #d0d5dd;
+	box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.1);
+	border-radius: 6px;
+	color: #344054;
+}
+
+.ain-admin-page select {
+	min-width: 120px;
+	height: 32px;
+}
+
+.ain-admin-page textarea {
+	height: 50px;
+}
+
+.ain-admin-page input[type="checkbox"] {
+	margin-top: 5px;
+}
+
+/* Tables / Groupings */
+
+.ain-admin-page .wp-list-table {
+	margin: 20px 0 0 0;
+	border-radius: 8px;
+	border: none;
+	overflow: hidden;
+	box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.1);
+}
+
+.ain-admin-page .wp-list-table thead th,
+.ain-admin-page .wp-list-table thead td {
+	height: 48px;
+	padding-right: 24px;
+	padding-left: 24px;
+	box-sizing: border-box;
+	background-color: #f9fafb;
+	border-color: #eaecf0;
+	font-weight: 500;
+}
+
+.ain-admin-page .wp-list-table thead th {
+	padding-left: 12px;
+}
+
+.ain-admin-page .wp-list-table td.check-column {
+	vertical-align: middle;
+	padding: 11px 0 0 3px;
+}
+
+.ain-admin-page input[type="checkbox"] {
+	margin: 0 0 10px 12px;
+}
+
+/*
+	Settings: Languages (page=mt-languages)
+*/
+
+#ain-language-primary > div {
+	margin-bottom: 10px;
+}
+
+.ain-lang-last th,
+.ain-lang-last td {
+	border-bottom: 8px solid #f0f0f1;
+}
+
+#ain-language-list tr:hover,
+#ain-language-list tr:focus-within {
+	background: #f0f0f1;
+}
+
+td.ain-lang-path {
+	font-family: monospace;
+	font-size: 12px;
+	line-height: 1.72em;
+}
+
+#ain-language-list input[type="checkbox"] {
+	margin: -1px 0 10px 12px;
+}
+
+#ain-language-list thead,
+#ain-language-list tbody {
+	/* display: block; */
+	overflow-x: hidden;
+}
+
+#ain-language-list tbody {
+	/* height: 50vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 312px; */
+
+	display: block;
+	height: 360px;
+	overflow: auto;
+}
+
+#ain-language-list thead,
+#ain-language-list tbody tr {
+	display: table;
+	width: 100%;
+	table-layout: fixed; /* even columns width , fix width of table too*/
+}
+
+#ain-language-list thead {
+	width: 100%;
+}
+
+/* Cache */
+
+#ain-org-options ul {
+	list-style: none;
+	margin: 8px 0 0;
+	padding: 0;
+	font-size: 13px;
+	float: left;
+	color: #646970;
+}
+
+#ain-org-options ul li {
+	display: inline-block;
+	margin: 0;
+	padding: 0;
+	white-space: nowrap;
+}
+
+#ain-org-options a.current {
+	color: #000;
+	font-weight: 600;
+	border: none;
+}
+
+#ain-org-options a {
+	line-height: 2;
+	padding: 0.2em;
+	text-decoration: none;
+	color: #0783be;
+}
