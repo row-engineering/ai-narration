@@ -9,17 +9,6 @@
  * @package    AI_Narration
  * @subpackage AI_Narration/includes
  */
-
-/**
- * Fired during plugin deactivation.
- *
- * This class defines all code necessary to run during the plugin's deactivation.
- *
- * @since      1.0.0
- * @package    AI_Narration
- * @subpackage AI_Narration/includes
- * @author     Anna Rasshivkina <annarasshivkina@gmail.com>
- */
 class AI_Narration_Deactivator {
 
 	/**

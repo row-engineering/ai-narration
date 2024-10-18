@@ -18,7 +18,6 @@ ai-narration<?php
  * @since      1.0.0
  * @package    AI_Narration
  * @subpackage AI_Narration/includes
- * @author     Anna Rasshivkina <annarasshivkina@gmail.com>
  */
 class AI_Narration_Activator {
 
@@ -30,6 +29,16 @@ class AI_Narration_Activator {
 	 * @since    1.0.0
 	 */
 	public static function activate() {
+
+		/**
+		 * Setup required directories
+		 */
+		$uploads_dir = BASE_PATH .  AI_NARRATION_DIR;
+		if (!file_exists($uploads_dir)) {
+			mkdir($uploads_dir, 0755, true);
+			$h = fopen($uploads_dir . '/index.html', 'w');
+			fclose($h);
+		}
 
 	}
 

@@ -25,7 +25,6 @@
  * @since      1.0.0
  * @package    AI_Narration
  * @subpackage AI_Narration/includes
- * @author     Anna Rasshivkina <annarasshivkina@gmail.com>
  */
 class AI_Narration {
 
@@ -200,6 +199,11 @@ class AI_Narration {
 	public function run() {
 		$this->loader->run();
 	}
+
+	public function test() {
+		return 'Test';
+	}
+
 
 	/**
 	 * The name of the plugin used to uniquely identify it within the context of

@@ -18,7 +18,6 @@
  *
  * @package    AI_Narration
  * @subpackage AI_Narration/admin
- * @author     Anna Rasshivkina <annarasshivkina@gmail.com>
  */
 class AI_Narration_Admin {
 
@@ -208,6 +207,16 @@ class AI_Narration_Admin {
 
 	public function setup_fields() {
 
+		$ai_narration_services = array();
+		foreach (AI_NARRATION_SERVICES as $key => $service) {
+			if (isset($service['name'])) {
+				$ai_narration_services[$key] = $service['name'];
+			}
+		}
+		$ai_narration_services['none'] = 'None';
+
+		$ai_narration_voices = AI_NARRATION_SERVICES['openai']['voices'];
+
 		$pages = array(
 			'ain-settings' => array(
 
@@ -218,10 +227,7 @@ class AI_Narration_Admin {
 					'label'   => 'Narration Service',
 					'section' => 'ai_narration_service',
 					'type'    => 'select',
-					'options' => array(
-						'openai'  => 'OpenAI TTS',
-						'none'    => 'None'
-					),
+					'options' => $ai_narration_services,
 					'default' => array('none')
 				),
 				array(
@@ -236,14 +242,7 @@ class AI_Narration_Admin {
 					'label'   => 'Narration Voice',
 					'section' => 'ai_narration_service',
 					'type'    => 'select',
-					'options' => array(
-						'alloy'   => 'Alloy',
-						'echo'    => 'Echo',
-						'fable'   => 'Fable',
-						'onyx'    => 'Onyx',
-						'nova'    => 'Nova',
-						'shimmer' => 'Shimmer',
-					),
+					'options' => $ai_narration_voices,
 					'default' => array('shimmer')
 				),
 
@@ -253,7 +252,7 @@ class AI_Narration_Admin {
 
 				array(
 					'uid'     => 'ai_narration_intro_text',
-					'label'   => 'Intro Text',
+					'label'   => 'Introduction Text',
 					'section' => 'ai_narration_features',
 					'type'    => 'textarea',
 					'supplemental' => 'Available variables: Headline, Authors, Date.',
@@ -268,16 +267,17 @@ class AI_Narration_Admin {
 				),
 				array(
 					'uid'     => 'ai_narration_intro_mp3',
-					'label'   => 'Intro Mp3 Filepath',
+					'label'   => 'Intro MP3 File Path',
 					'section' => 'ai_narration_features',
 					'type'    => 'text',
 				),
 				array(
 					'uid'     => 'ai_narration_outro_mp3',
-					'label'   => 'Outro Mp3 Filepath',
+					'label'   => 'Outro MP3 File Path',
 					'section' => 'ai_narration_features',
 					'type'    => 'text',
 				),
+
 				// TO DO: how to handle this value changing? move all previous files?
 				// array(
 				// 	'uid'     => 'ai_narration_base_dir',

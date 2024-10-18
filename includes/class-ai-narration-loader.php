@@ -19,7 +19,6 @@
  *
  * @package    AI_Narration
  * @subpackage AI_Narration/includes
- * @author     Anna Rasshivkina <annarasshivkina@gmail.com>
  */
 class AI_Narration_Loader {
 
