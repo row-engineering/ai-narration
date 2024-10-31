@@ -68,15 +68,19 @@ class AI_Narration_Public {
 	 * @param      string    $version           The version of this plugin.
 	 */
 	public function __construct( $plugin_name, $version ) {
-
-		// Basic Info
 		$this->plugin_name      = $plugin_name;
 		$this->version          = $version;
+
 		$this->service_provider = $this->get_service_provider();
 		$this->api_key          = $this->get_api_key();
 		$this->voice            = $this->get_voice();
 		$this->files_dir        = 'narrations';
 
+		$this->get_options();
+		$this->get_post_info();
+	}
+
+	private function get_options() {
 		// Exclusions
 		$this->eligible_post_types  = $this->get_eligible_post_types();
 		$this->exclusion_terms      = $this->get_exclusion_terms();
@@ -88,16 +92,33 @@ class AI_Narration_Public {
 		// Features
 		$this->intro_text = '';
 		$this->outro_text = '';
+	}
 
-		// Post Info
+	private function get_post_info( $post = false ) {
+		$this->post         = $post;
 		$this->post_id      = false;
 		$this->post_title   = '';
 		$this->post_slug    = '';
 		$this->post_authors = array();
 		$this->post_date    = '';
+
+		if ( !$post ) {
+			global $post;
+		}
+
+		if ( $post ) {
+			$this->post         = $post;
+			$this->post_id      = $post->ID;
+			$this->post_title   = get_the_title( $post );
+			$this->post_slug    = $post->post_name;
+			$this->post_date    = $post->post_date;
+			$this->post_authors = $this->get_post_authors();
+		}
 	}
 
-	/************** GET CONFIGURATION OPTIONS **************/
+	/*****************************
+	 * GET CONFIGURATION OPTIONS *
+	 *****************************/
 
 	private function get_service_provider() {
 		$service_provider = '';
@@ -234,51 +255,40 @@ class AI_Narration_Public {
 		return $text;
 	}
 
-	/************** GENERATE AUDIO **************/
+	/******************
+	 * GENERATE AUDIO *
+	 ******************/
 
 	public function request_new_audio($new_status, $old_status, $post) {
-		// error_log('generate_new_audio');
-
-		$this->post         = $post;
-		$this->post_id      = $post->ID;
-		$this->post_title   = get_the_title( $post );
-		$this->post_slug    = $post->post_name;
-		$this->post_date    = $post->post_date;
-		$this->post_authors = $this->get_post_authors();
-
 		if ($new_status === 'publish' && $old_status !== 'publish') {
 
 			$eligible_post = $this->is_post_eligible();
 			// if ( $eligible_post ) {
-
 				$text_groups = $this->get_text_block_groups();
 				if ( !empty($text_groups) ) {
 					$this->generate_audio_files( $post, $text_groups );
 					return true;
-
 				}
 			// }
 		}
-	
+
 		return false;
 	}
 
-
 	private function is_post_eligible() {
-
 		$post_type = get_post_type($this->post);
 		if ( !in_array( $post_type, $this->eligible_post_types) ) {
 			// error_log('FAIL: post type');
 			return false;
 		}
 
-		// $post_terms = get_the_terms( $this->post_id, $this->exclusion_tax );
-		// if ( $post_terms ) {
-		// 	if ( count(array_intersect($post_terms, $this->exclusion_terms)) > 0 ) {
-		// 	// error_log('FAIL: terms');
-		// 		return false;
-		// 	}
-		// }
+		$post_terms = get_the_terms( $this->post_id, $this->exclusion_tax );
+		if ( $post_terms ) {
+			if ( count(array_intersect($post_terms, $this->exclusion_terms)) > 0 ) {
+			// error_log('FAIL: terms');
+				return false;
+			}
+		}
 
 		$post_date = $this->post->post_date;
 		if ( strtotime($post_date) < strtotime($this->cutoff_date) ) {
@@ -326,7 +336,7 @@ class AI_Narration_Public {
 			switch($block['blockName']) {
 				case 'core/paragraph':
 				case 'core/heading':
-	
+
 					if (isset($block['innerHTML'])) {
 						$block_content = trim(rtrim(strip_tags($block['innerHTML']), "&nbsp;\n"));
 						if (!empty($block_content)) {
@@ -450,7 +460,33 @@ class AI_Narration_Public {
 		return $name_list;
 	}
 
-	/************** ENQUEUE SCRIPTS/STYLES **************/
+	/******************
+	 * TEMPLATE LOGIC *
+	 ******************/
+
+	public function output_audio_js_obj() {
+		$this->get_post_info();
+		$eligible_post = $this->is_post_eligible();
+		if ( $eligible_post ) {
+			$post_date = $this->post->post_date;
+			$date = DateTime::createFromFormat('Y-m-d H:i:s', $post_date);
+			$year = $date->format('Y');
+			$slug = $this->post->post_name;
+			$index_file = AI_NARRATION_PATH . "/$year/$slug/index.json";
+			if ( file_exists($index_file) ) {
+				$audio_json = file_get_contents($index_file);
+				$audio_data = json_decode($audio_json);
+				if ( $audio_data->segments === count($audio_data->audio_paths) ) {
+					sort($audio_data->audio_paths);
+					echo "<script id='ai-narration-data'>$audio_json</script>";
+				}
+			}
+		}
+	}
+
+	/**************************
+	 * ENQUEUE SCRIPTS/STYLES *
+	 **************************/
 
 	/**
 	 * Register the stylesheets for the public-facing side of the site.

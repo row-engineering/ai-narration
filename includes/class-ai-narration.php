@@ -187,7 +187,8 @@ class AI_Narration {
 			// $this->loader->add_filter( 'row_js_var',         $plugin_public, 'update_global_js_var', 20, 1 );
 			$this->loader->add_action( 'wp_enqueue_scripts',     $plugin_public, 'enqueue_styles' );
 			$this->loader->add_action( 'wp_enqueue_scripts',     $plugin_public, 'enqueue_scripts' );
-			$this->loader->add_filter( 'transition_post_status', $plugin_public, 'generate_new_audio', 20, 3 );
+			$this->loader->add_filter( 'transition_post_status', $plugin_public, 'request_new_audio', 20, 3 );
+			$this->loader->add_action( 'wp_head',                $plugin_public, 'output_audio_js_obj', 20, 0 );
 		}
 	}
 

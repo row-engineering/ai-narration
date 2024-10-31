@@ -56,7 +56,6 @@ class AI_Narration_Endpoint {
 					$this->update_post_index($post_data, $audio_index, $audio_dir);
 				}
 			}
-
 		}
 
 		$this->apply_response_and_exit(200, 'All good.');
