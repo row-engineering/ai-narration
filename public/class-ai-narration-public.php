@@ -282,7 +282,7 @@ class AI_Narration_Public {
 			return false;
 		}
 
-		$post_terms = get_the_terms( $this->post_id, $this->exclusion_tax );
+		$post_terms = array_map(function($t) { return $t->slug; }, get_the_terms( $this->post_id, $this->exclusion_tax ));
 		if ( $post_terms ) {
 			if ( count(array_intersect($post_terms, $this->exclusion_terms)) > 0 ) {
 			// error_log('FAIL: terms');
