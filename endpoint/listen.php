@@ -11,9 +11,6 @@ require BASE_PATH . '/wp-load.php';
 require dirname(__DIR__) . '/endpoint/class-ai-narration-endpoint.php';
 
 function listen() {
-	// $endpoint = new AI_Narration_Endpoint(array(
-	// 	'debug' => true
-	// ));
 	$endpoint = new AI_Narration_Endpoint();
 	$endpoint->listen();
 }

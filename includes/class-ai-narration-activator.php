@@ -33,7 +33,7 @@ class AI_Narration_Activator {
 		/**
 		 * Setup required directories
 		 */
-		$uploads_dir = BASE_PATH .  AI_NARRATION_DIR;
+		$uploads_dir = AI_NARRATION_PATH;
 		if (!file_exists($uploads_dir)) {
 			mkdir($uploads_dir, 0755, true);
 			$h = fopen($uploads_dir . '/index.html', 'w');

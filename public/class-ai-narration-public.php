@@ -77,7 +77,6 @@ class AI_Narration_Public {
 		$this->files_dir        = 'narrations';
 
 		$this->get_options();
-		$this->get_post_info();
 	}
 
 	private function get_options() {
@@ -116,9 +115,9 @@ class AI_Narration_Public {
 		}
 	}
 
-	/*****************************
-	 * GET CONFIGURATION OPTIONS *
-	 *****************************/
+	/***************************
+	 * GET OPTIONS & POST DATA *
+	 ***************************/
 
 	private function get_service_provider() {
 		$service_provider = '';
@@ -228,31 +227,72 @@ class AI_Narration_Public {
 		return $max_limit;
 	}
 
-	private function get_intro_text( $post ) {
+	private function get_intro_text() {
 		$intro_text = '';
+
 		$ain_intro_text = get_option( 'ai_narration_intro_text' );
 		if ( !empty($ain_intro_text) ) {
-			$intro_text = $this->sprintf_post_meta($ain_intro_text, $post);
+			$intro_text = $this->sprintf_post_meta($ain_intro_text);
 		}
+
 		return $intro_text;
 	}
 
-	private function get_outro_text( $post ) {
+	private function get_outro_text() {
 		$outro_text = '';
+
 		$ain_outro_text = get_option( 'ai_narration_outro_text' );
 		if ( !empty($ain_outro_text) ) {
-			$outro_text = $this->sprintf_post_meta($ain_outro_text, $post);
+			$outro_text = $this->sprintf_post_meta($ain_outro_text);
 		}
+
 		return $outro_text;
 	}
 
-	public function sprintf_post_meta( $text, $post ) {
-
-		$text = preg_replace( '/<Headline>/i', $post->post_title, $text );
-		$text = preg_replace( '/<Date>/i',     $this->get_readable_date($post),    $text );
-		$text = preg_replace( '/<Authors>/i',  $this->get_readable_authors($post), $text );
+	public function sprintf_post_meta( $text ) {
+		$text = preg_replace( '/<Headline>/i', $this->post_title,             $text );
+		$text = preg_replace( '/<Date>/i',     $this->get_readable_date(),    $text );
+		$text = preg_replace( '/<Authors>/i',  $this->get_readable_authors(), $text );
 
 		return $text;
+	}
+
+	/*
+		Convert a publish date to a format better suited for reading
+	*/
+	private function get_readable_date() {
+		$date = new DateTime($this->post_date);
+		$readable_date = $date->format('F jS, Y');
+		return $readable_date;
+	}
+
+	/*
+		Convert a list of author names to a format better suited for reading
+	*/
+	private function get_readable_authors() {
+		$post_authors = $this->get_post_authors();
+		if (count($post_authors) > 1) {
+			$final_name = array_pop($post_authors);  // Remove and get the final name
+			$name_list = implode(', ', $post_authors) . ' and ' . $final_name;
+		} else {
+			$name_list = $post_authors[0];
+		}
+		return $name_list;
+	}
+
+	private function get_post_authors() {
+		$authors = array();
+
+		if ( function_exists('get_coauthors') ) {
+			$coauthors = get_coauthors( $this->post_id );
+			foreach ($coauthors as &$coauthor) {
+				$authors[] = $coauthor->display_name;
+			}
+		} else {
+			$authors[] = get_the_author_meta( 'display_name', $this->post->post_author );
+		}
+
+		return $authors;
 	}
 
 	/******************
@@ -261,42 +301,42 @@ class AI_Narration_Public {
 
 	public function request_new_audio($new_status, $old_status, $post) {
 		if ($new_status === 'publish' && $old_status !== 'publish') {
+			$this->get_post_info( $post );
 
 			$eligible_post = $this->is_post_eligible();
-			// if ( $eligible_post ) {
+			if ( $eligible_post ) {
 				$text_groups = $this->get_text_block_groups();
 				if ( !empty($text_groups) ) {
-					$this->generate_audio_files( $post, $text_groups );
-					return true;
+					return $this->generate_audio_files($text_groups);
 				}
-			// }
+			}
 		}
 
 		return false;
 	}
 
 	private function is_post_eligible() {
-		$post_type = get_post_type($this->post);
+		$post_type = get_post_type( $this->post );
 		if ( !in_array( $post_type, $this->eligible_post_types) ) {
-			// error_log('FAIL: post type');
+			// error_log('is_post_eligible: FAIL: post type');
 			return false;
 		}
 
 		$post_terms = array_map(function($t) { return $t->slug; }, get_the_terms( $this->post_id, $this->exclusion_tax ));
 		if ( $post_terms ) {
 			if ( count(array_intersect($post_terms, $this->exclusion_terms)) > 0 ) {
-			// error_log('FAIL: terms');
+				// error_log('is_post_eligible: FAIL: terms');
 				return false;
 			}
 		}
 
 		$post_date = $this->post->post_date;
 		if ( strtotime($post_date) < strtotime($this->cutoff_date) ) {
-			// error_log('FAIL: date');
+			// error_log('is_post_eligible: FAIL: date');
 			return false;
 		}
 
-		// error_log('PASS');
+		// error_log('is_post_eligible: PASS');
 		return true;
 	}
 
@@ -304,18 +344,16 @@ class AI_Narration_Public {
 	 * Combine all the post blocks into a group array to be processed
 	 */
 	private function get_text_block_groups() {
-
 		$blocks = parse_blocks( $this->post->post_content );
 
 		$block_groups = array();
 		$block_groups_index = 0;
 		$current_group = '';
 
-		// $max_length = 4000;
 		$max_length = 2000;
 		$wc = 0;
 
-		$intro_text = $this->get_intro_text( $this->post );
+		$intro_text = $this->get_intro_text();
 		if (!empty($intro_text)) {
 			array_unshift($blocks, array(
 				'blockName' => 'core/paragraph',
@@ -323,7 +361,7 @@ class AI_Narration_Public {
 			));
 		}
 
-		$outro_text = $this->get_outro_text( $this->post );
+		$outro_text = $this->get_outro_text();
 		if (!empty($outro_text)) {
 			$blocks[] = array(
 				'blockName' => 'core/paragraph',
@@ -331,19 +369,17 @@ class AI_Narration_Public {
 			);
 		}
 
-
 		foreach ($blocks as $block) {
 			switch($block['blockName']) {
 				case 'core/paragraph':
 				case 'core/heading':
-
 					if (isset($block['innerHTML'])) {
 						$block_content = trim(rtrim(strip_tags($block['innerHTML']), "&nbsp;\n"));
 						if (!empty($block_content)) {
-							$block_len = strlen($block_content);
+							$block_len = str_word_count($block_content);
 							$wc += $block_len;
 
-							if (strlen($current_group) + $block_len > $max_length) {
+							if (str_word_count($current_group) + $block_len > $max_length) {
 								$block_groups_index++;
 								$current_group = '';
 							}
@@ -356,16 +392,17 @@ class AI_Narration_Public {
 				case 'core/separator':
 					$block_groups[$block_groups_index][] = '...';
 					break;
-
 			}
 		}
 
-	//	If its too short or too long then return nothing
+		//	If it's too short or too long then return nothing
 		$wc_in_range = $wc >= $this->word_limit_min && $wc <= $this->word_limit_max;
-		if (! $wc_in_range ) {
+		if ( !$wc_in_range ) {
+			// error_log("get_text_block_groups: word count out of allowable range. min: {$this->word_limit_min} max: {$this->word_limit_max} total: $wc");
 			$block_groups = array();
 		}
 
+		// error_log('get_text_block_groups: ' . count($block_groups));
 		return $block_groups;
 	}
 
@@ -374,33 +411,30 @@ class AI_Narration_Public {
 
 	Kicks-off multiple independent requests for TTS audios file based on groups of text.
 	*/
-	private function generate_audio_files($post = array(), $text_groups = array()) {
-
-		$log = array();
-
-		if (!empty($post)) {
+	private function generate_audio_files($text_groups = array()) {
+		if (!empty($this->post)) {
 
 			$data = array(
 				'key'     => AI_NARRATION_KEY,
-				'id'      => $post->ID,
-				'title'   => get_the_title( $post ),
-				'date'    => $post->post_date,
-				'url'     => $link = get_permalink( $post->ID ),
-				'slug'    => $post->post_name,
-				'authors' => $this->get_post_authors(),
+				'id'      => $this->post_id,
+				'title'   => $this->post_title,
+				'date'    => $this->post_date,
+				'url'     => get_permalink($this->post_id),
+				'slug'    => $this->post_slug,
+				'authors' => $this->post_authors,
 				'segment' => 0,
-				'total'   => 0,
+				'total'   => count($text_groups),
 				'text'    => ''
 			);
 
-			$data['total'] = count($text_groups);
-
+			$responses = array();
 			foreach ($text_groups as $text_group) {
-
 				$data['segment']++;
 				$data['text'] = implode("\n\n", $text_group);
 
-				$response = wp_remote_post(
+				// error_log(json_encode(array_map(function($d) { return gettype($d) === 'string' && strlen($d)>197 ? substr($d,0,197).'...' : $d; }, $data)));
+
+				$responses[] = wp_remote_post(
 					"https://{$_SERVER['HTTP_HOST']}/wp-content/plugins/ai-narration/endpoint/listen.php",
 					array(
 						'method'  => 'POST',
@@ -408,56 +442,13 @@ class AI_Narration_Public {
 						'headers' => array(
 							'Content-Type' => 'application/json',
 						),
-						'timeout' => 0.01,
+						'timeout' => 5,
 					)
 				);
-
-				$log[] = 'Segment: ' . $data['segment'];
 			}
 
+			return $responses;
 		}
-
-	}
-
-	private function get_post_authors( $post = array()) {
-		$authors = array();
-
-		if (empty($post)) {
-			$post = $this->post;
-		}
-
-		if ( function_exists('get_coauthors') ) {
-			$coauthors = get_coauthors( $post->post_id );
-			foreach ($coauthors as &$coauthor) {
-				$authors[] = $coauthor->display_name;
-			}
-		} else {
-			$authors[] = get_the_author_meta( 'display_name', $post->post_author );
-		}
-
-		return $authors;
-	}
-
-	/*
-		Convert a publish date to a format better suited for reading
-	*/
-	private function get_readable_date( $post ) {
-		$date = new DateTime($post->post_date);
-		$readable_date = $date->format('F jS, Y');
-		return $readable_date;
-	}
-	/*
-		Convert a list of author names to a format better suited for reading
-	*/
-	private function get_readable_authors( $post ) {
-		$post_authors = $this->get_post_authors( $post );
-		if (count($post_authors) > 1) {
-			$last_name = array_pop($post_authors);  // Remove and get the last name
-			$name_list = implode(', ', $post_authors) . ' and ' . $last_name;
-		} else {
-			$name_list = $post_authors[0];
-		}
-		return $name_list;
 	}
 
 	/******************

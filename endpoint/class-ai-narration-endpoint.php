@@ -6,23 +6,22 @@ if ( ! defined( 'WPINC' ) ) {
 
 class AI_Narration_Endpoint {
 
-	private $index;
-	private $dir;
+	private $api_service;
 	private $api_key;
 	private $api_url;
+	private $voice;
+	private $debug;
 
 	/**
 	 * Initialize the class and set its properties.
 	 */
 	public function __construct($options = array()) {
+		$this->api_service = get_option( 'ai_narration_service_vendor' )[0];
+		$this->api_key     = get_option( 'ai_narration_service_api_key' );
+		$this->api_url     = AI_NARRATION_SERVICES[$this->api_service]['endpoint'];
+		$this->voice       = get_option( 'ai_narration_voice' );
+
 		$this->debug = false;
-
-		$this->index = array();
-		$this->dir   = '';
-
-		$this->api_key = get_option( 'ai_narration_service_api_key' );
-		$this->api_url = 'https://api.openai.com/v1/audio/speech';
-
 		if (!empty($options)) {
 			if (isset($options['debug'])) {
 				$this->debug = true;
@@ -36,15 +35,18 @@ class AI_Narration_Endpoint {
 	 *	Public call to indicate which post should have audio generated
 	 */
 	public function listen() {
+		if ( !$this->api_url ) {
+			$this->apply_response_and_exit(403, 'Forbidden. Must set valid Narration Service.');
+		}
 
-		if (!$this->api_key || empty($this->api_key)) {
+		if ( !$this->api_key ) {
 			$this->apply_response_and_exit(403, 'Forbidden. Invalid or missing API key.');
 		}
 
 		$post_data = $this->get_post_data();
-		if (!empty($post_data)) {
+		if ( !empty($post_data) ) {
 
-			if (isset($post_data['text']) && !empty($post_data['text'])) {
+			if ( isset($post_data['text']) && !empty($post_data['text']) ) {
 
 				$audio_dir   = $this->get_directory($post_data);
 				$audio_index = $post_data['segment'];
@@ -94,7 +96,7 @@ class AI_Narration_Endpoint {
 		$index_data = array();
 		$index_file = "{$audio_dir}/index.json";
 
-	//	Get current index, or initialize a new one
+		//	Get current index, or initialize a new one
 		if (!file_exists($index_file)) {
 
 			$timestamp = microtime(true);
@@ -138,7 +140,7 @@ class AI_Narration_Endpoint {
 		}
 		http_response_code($code);
 		print json_encode(array(
-			'status'  => $code, 
+			'status'  => $code,
 			'message' => $message
 		));
 		exit;
@@ -151,14 +153,14 @@ class AI_Narration_Endpoint {
 	 */
 	private function get_post_data() {
 		$data = array();
-		if ($this->debug || $_SERVER['REQUEST_METHOD'] === 'POST') {
 
-			// if ($this->debug) {
-			// 	$post_data = file_get_contents('last-request-post.txt');
-			// } else {
+		if ($this->debug || $_SERVER['REQUEST_METHOD'] === 'POST') {
+			if ($this->debug) {
+				$post_data = file_get_contents('last-request-post.txt');
+			} else {
 				$post_data = file_get_contents('php://input');
 				file_put_contents('last-request-post.txt', $post_data);
-			// }
+			}
 
 			if (strpos($post_data, AI_NARRATION_KEY) !== false) {
 				$data = json_decode($post_data, true);
@@ -170,6 +172,7 @@ class AI_Narration_Endpoint {
 		} else {
 			$this->apply_response_and_exit(405, 'Method Not Allowed. Only POST requests are supported.');
 		}
+
 		return $data;
 	}
 
@@ -183,7 +186,7 @@ class AI_Narration_Endpoint {
 		$data = [
 			'model' => 'tts-1',
 			'input' => $audio_text,
-			'voice' => 'shimmer'
+			'voice' => $this->voice
 		];
 
 		$response = $this->send_request($data);

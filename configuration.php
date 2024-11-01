@@ -4,7 +4,7 @@ if (!defined('BASE_PATH')) {
 }
 
 define('AI_NARRATION_KEY',  'fskjdhg8765fs!');
-define('AI_NARRATION_DIR',  '/wp-content/plugins/ai-narration/narrations');
+define('AI_NARRATION_DIR',  '/wp-content/narrations');
 define('AI_NARRATION_PATH', BASE_PATH . AI_NARRATION_DIR);
 
 /* 
