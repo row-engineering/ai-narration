@@ -112,9 +112,14 @@ class AI_Narration {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-ai-narration-i18n.php';
 
 		/**
-		 * The class responsible for defining all actions that occur in the admin area.
+		 * The class responsible for defining all actions that occur in the settings area.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-ai-narration-admin.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-ai-narration-settings.php';
+
+		/**
+		 * The class responsible for creating the Post Narrations management in the admin area.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-ai-narration-posts-list.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing

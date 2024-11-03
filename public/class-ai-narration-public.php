@@ -459,8 +459,7 @@ class AI_Narration_Public {
 		$this->get_post_info();
 		$eligible_post = $this->is_post_eligible();
 		if ( $eligible_post ) {
-			$post_date = $this->post->post_date;
-			$date = DateTime::createFromFormat('Y-m-d H:i:s', $post_date);
+			$date = DateTime::createFromFormat('Y-m-d H:i:s', $this->post->post_date);
 			$year = $date->format('Y');
 			$slug = $this->post->post_name;
 			$index_file = AI_NARRATION_PATH . "/$year/$slug/index.json";

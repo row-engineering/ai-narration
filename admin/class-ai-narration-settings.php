@@ -9,16 +9,6 @@
  * @package    AI_Narration
  * @subpackage AI_Narration/admin
  */
-
-/**
- * The admin-specific functionality of the plugin.
- *
- * Defines the plugin name, version, and two examples hooks for how to
- * enqueue the admin-specific stylesheet and JavaScript.
- *
- * @package    AI_Narration
- * @subpackage AI_Narration/admin
- */
 class AI_Narration_Admin {
 
 	/**
@@ -38,8 +28,6 @@ class AI_Narration_Admin {
 	 * @var      string    $version    The current version of this plugin.
 	 */
 	private $version;
-
-	private $sub_menus;
 
 	private $pages;
 
@@ -162,8 +150,6 @@ class AI_Narration_Admin {
 		}
 	}
 
-	/* **** */
-
 	public function plugin_settings_page_content() {
 		$page_name = str_replace("{$this->plugin_name}-", '', $_GET["page"]);
 		if (isset($this->pages[$page_name])){
@@ -218,6 +204,8 @@ class AI_Narration_Admin {
 		$ai_narration_voices = AI_NARRATION_SERVICES['openai']['voices'];
 
 		$pages = array(
+			/************* SETTINGS *************/
+
 			'ain-settings' => array(
 
 				/*	Section: Service */
@@ -345,97 +333,7 @@ class AI_Narration_Admin {
 					'default' => 20000,
 					'supplemental' => 'Posts with a higher word count will not be narrated.'
 				),
-			)
-		);
-
-		$fields = array(
-
-			/* Examples */
-
-			array(
-				'uid'     => 'awesome_text_field',
-				'label'   => 'Sample Text Field',
-				'section' => 'our_first_section',
-				'type'    => 'text',
-				'placeholder' => 'Some text',
-				'helper'  => 'Does this help?',
-				'supplemental' => 'I am underneath!',
 			),
-
-			array(
-				'uid'     => 'awesome_password_field',
-				'label'   => 'Sample Password Field',
-				'section' => 'our_first_section',
-				'type'    => 'password',
-			),
-			array(
-				'uid'     => 'awesome_number_field',
-				'label'   => 'Sample Number Field',
-				'section' => 'our_first_section',
-				'type'    => 'number',
-			),
-			array(
-				'uid'     => 'awesome_textarea',
-				'label'   => 'Sample Text Area',
-				'section' => 'our_first_section',
-				'type'    => 'textarea',
-			),
-			array(
-				'uid'     => 'awesome_select',
-				'label'   => 'Sample Select Dropdown',
-				'section' => 'our_first_section',
-				'type'    => 'select',
-				'options' => array(
-					'option1' => 'Option 1',
-					'option2' => 'Option 2',
-					'option3' => 'Option 3',
-					'option4' => 'Option 4',
-					'option5' => 'Option 5',
-				),
-				'default' => array()
-			),
-			array(
-				'uid' => 'awesome_multiselect',
-				'label' => 'Sample Multi Select',
-				'section' => 'our_first_section',
-				'type' => 'multiselect',
-				'options' => array(
-					'option1' => 'Option 1',
-					'option2' => 'Option 2',
-					'option3' => 'Option 3',
-					'option4' => 'Option 4',
-					'option5' => 'Option 5',
-				),
-				'default' => array()
-			),
-			array(
-				'uid' => 'awesome_radio',
-				'label' => 'Sample Radio Buttons',
-				'section' => 'our_first_section',
-				'type' => 'radio',
-				'options' => array(
-					'option1' => 'Option 1',
-					'option2' => 'Option 2',
-					'option3' => 'Option 3',
-					'option4' => 'Option 4',
-					'option5' => 'Option 5',
-				),
-				'default' => array()
-			),
-			array(
-				'uid' => 'awesome_checkboxes',
-				'label' => 'Sample Checkboxes',
-				'section' => 'our_first_section',
-				'type' => 'checkbox',
-				'options' => array(
-					'option1' => 'Option 1',
-					'option2' => 'Option 2',
-					'option3' => 'Option 3',
-					'option4' => 'Option 4',
-					'option5' => 'Option 5',
-				),
-				'default' => array()
-			)
 		);
 
 		foreach( $pages as $option_group => $fields ){
