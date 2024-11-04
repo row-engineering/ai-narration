@@ -32,7 +32,7 @@ class Posts_Narration_List_Table extends WP_List_Table {
 			'post_status' => 'publish',
 			'date_query' => array(
 				array(
-					'after' => '6 months ago'
+					'after' => '2 weeks ago'
 				)
 			),
 			'posts_per_page' => -1
