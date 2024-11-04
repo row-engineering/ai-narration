@@ -376,10 +376,10 @@ class AI_Narration_Public {
 					if (isset($block['innerHTML'])) {
 						$block_content = trim(rtrim(strip_tags($block['innerHTML']), "&nbsp;\n"));
 						if (!empty($block_content)) {
-							$block_len = str_word_count($block_content);
+							$block_len = strlen($block_content);
 							$wc += $block_len;
 
-							if (str_word_count($current_group) + $block_len > $max_length) {
+							if (strlen($current_group) + $block_len > $max_length) {
 								$block_groups_index++;
 								$current_group = '';
 							}

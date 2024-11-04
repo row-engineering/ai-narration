@@ -19,7 +19,7 @@ class AI_Narration_Endpoint {
 		$this->api_service = get_option( 'ai_narration_service_vendor' )[0];
 		$this->api_key     = get_option( 'ai_narration_service_api_key' );
 		$this->api_url     = AI_NARRATION_SERVICES[$this->api_service]['endpoint'];
-		$this->voice       = get_option( 'ai_narration_voice' );
+		$this->voice       = get_option( 'ai_narration_voice' )[0];
 
 		$this->debug = false;
 		if (!empty($options)) {
