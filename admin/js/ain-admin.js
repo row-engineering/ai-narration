@@ -1,32 +1,97 @@
-(function( $ ) {
-	'use strict';
+document.addEventListener('DOMContentLoaded', function () {
+	const fetchConfig = {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded'
+		},
+		credentials: 'same-origin'
+	};
 
-	/**
-	 * All of the code for your admin-facing JavaScript source
-	 * should reside in this file.
-	 *
-	 * Note: It has been assumed you will write jQuery code here, so the
-	 * $ function reference has been prepared for usage within the scope
-	 * of this function.
-	 *
-	 * This enables you to define handlers, for when the DOM is ready:
-	 *
-	 * $(function() {
-	 *
-	 * });
-	 *
-	 * When the window is loaded:
-	 *
-	 * $( window ).load(function() {
-	 *
-	 * });
-	 *
-	 * ...and/or other possibilities.
-	 *
-	 * Ideally, it is not considered best practise to attach more than a
-	 * single DOM-ready or window-load handler for a particular page.
-	 * Although scripts in the WordPress core, Plugins and Themes may be
-	 * practising this, we should strive to set a better example in our own work.
-	 */
+	function serializeData(obj) {
+		const formData = new URLSearchParams();
+		Object.keys(obj).forEach(key => {
+			if (Array.isArray(obj[key])) {
+				obj[key].forEach(value => {
+					formData.append(`${key}[]`, value);
+				});
+			} else {
+				formData.append(key, obj[key]);
+			}
+		});
+		return formData.toString();
+	}
 
-})( jQuery );
+	async function generateNarration(postIds) {
+		try {
+			const response = await fetch(ajaxurl, {
+				...fetchConfig,
+				body: serializeData({
+					action: 'generate_narration',
+					post_ids: postIds,
+					nonce: narrationAdmin.nonce
+				})
+			});
+			const data = await response.json();
+			if (data.success) {
+				location.reload();
+			} else {
+				throw new Error(data.data || 'Unknown error');
+			}
+		} catch (error) {
+			console.error('Error generating narration:', error);
+			alert('Error generating narration: ' + error.message);
+		}
+	}
+
+	async function deleteNarration(postIds) {
+		try {
+			const response = await fetch(ajaxurl, {
+				...fetchConfig,
+				body: serializeData({
+					action: 'delete_narration',
+					post_ids: postIds,
+					nonce: narrationAdmin.nonce
+				})
+			});
+			const data = await response.json();
+			if (data.success) {
+				location.reload();
+			} else {
+				throw new Error(data.data || 'Unknown error');
+			}
+		} catch (error) {
+			console.error('Error deleting narration:', error);
+			alert('Error deleting narration: ' + error.message);
+		}
+	}
+
+	document.querySelectorAll('.generate-narration').forEach(button => {
+		button.addEventListener('click', function () {
+			generateNarration([this.dataset.postId]);
+		});
+	});
+
+	document.querySelectorAll('.delete-narration').forEach(button => {
+		button.addEventListener('click', function () {
+			deleteNarration([this.dataset.postId]);
+		});
+	});
+
+	document.getElementById('bulk-generate').addEventListener('click', function () {
+		const selectedPosts = Array.from(document.querySelectorAll('input[name="post[]"]:checked'))
+			.map(checkbox => checkbox.value);
+
+		if (selectedPosts.length > 0) {
+			generateNarration(selectedPosts);
+		}
+	});
+
+	document.getElementById('bulk-delete').addEventListener('click', function () {
+		const selectedPosts = Array.from(document.querySelectorAll('input[name="post[]"]:checked'))
+			.map(checkbox => checkbox.value);
+
+		if (selectedPosts.length > 0) {
+			deleteNarration(selectedPosts);
+		}
+	});
+});

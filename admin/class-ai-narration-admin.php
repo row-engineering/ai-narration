@@ -11,24 +11,8 @@
  */
 class AI_Narration_Admin {
 
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
 	private $plugin_name;
-
-	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
 	private $version;
-
 	private $pages;
 
 	/**
@@ -41,7 +25,7 @@ class AI_Narration_Admin {
 	public function __construct( $plugin_name, $version ) {
 
 		$this->plugin_name = $plugin_name;
-		$this->version = $version;
+		$this->version     = $version;
 
 		$this->pages = array(
 			'settings' => array(
@@ -55,71 +39,25 @@ class AI_Narration_Admin {
 			)
 		);
 
+		$this->add_actions();
+	}
+
+	private function add_actions() {
 		add_action( 'admin_menu', array( $this, 'create_plugin_settings_page' ) );
 		add_filter( 'plugin_action_links_' . AI_NARRATION_BASENAME, array( $this, 'add_plugin_action_link' ), 10, 2 );
 
-		add_action( 'admin_init', array( $this, 'setup_sections' ) );
-		add_action( 'admin_init', array( $this, 'setup_fields' ) );
+		add_action( 'admin_init', array( $this, 'setup_settings_sections' ) );
+		add_action( 'admin_init', array( $this, 'setup_settings_fields' ) );
 
 		// Auto-suggest
 		add_action('wp_ajax_post_lookup',        array( $this, 'post_lookup'));
 		add_action('wp_ajax_nopriv_post_lookup', array( $this, 'post_lookup'));
 		add_action('wp_ajax_tag_lookup',         array( $this, 'tag_lookup'));
 		add_action('wp_ajax_nopriv_tag_lookup',  array( $this, 'tag_lookup'));
-	}
-
-	/**
-	 * Register the stylesheets for the admin area.
-	 *
-	 * @since    1.0.0
-	 */
-	public function enqueue_styles() {
-
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in AI_Narration_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The AI_Narration_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ain-admin.css', array(), $this->version, 'all' );
-
-	}
-
-	/**
-	 * Register the JavaScript for the admin area.
-	 *
-	 * @since    1.0.0
-	 */
-	public function enqueue_scripts() {
-
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in AI_Narration_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The AI_Narration_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
-		wp_enqueue_script('suggest');
-		// wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ain-admin.js', array( 'jquery' ), $this->version, false );
-
-	}
-
-	public function add_plugin_action_link(array $links) {
-		$url = get_admin_url() . "options-general.php?page={$this->plugin_name}-settings";
-		$settings_link = "<a href=\"{$url}\">Settings</a>";
-		$links[] = $settings_link;
-		return $links;
+		
+		// Posts/Narrations admin callbacks
+		add_action('wp_ajax_generate_narration',  array( $this, 'handle_generate_narration'));
+		add_action('wp_ajax_delete_narration',   array( $this, 'handle_delete_narration'));
 	}
 
 	/**
@@ -127,7 +65,6 @@ class AI_Narration_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-
 	public function create_plugin_settings_page() {
 		$page_title = 'Settings';
 		$menu_title = 'AI Narrations';
@@ -150,6 +87,8 @@ class AI_Narration_Admin {
 		}
 	}
 
+	/*********************************************** SETTINGS PAGE ***********************************************/
+
 	public function plugin_settings_page_content() {
 		$page_name = str_replace("{$this->plugin_name}-", '', $_GET["page"]);
 		if (isset($this->pages[$page_name])){
@@ -159,14 +98,14 @@ class AI_Narration_Admin {
 		}
 	}
 
-	public function admin_notice() { ?>
-		<div class="notice notice-success inline is-dismissible">
-			<p>Your settings have been updated</p>
-		</div><?php
+	public function add_plugin_action_link(array $links) {
+		$url = get_admin_url() . "options-general.php?page={$this->plugin_name}-settings";
+		$settings_link = "<a href=\"{$url}\">Settings</a>";
+		$links[] = $settings_link;
+		return $links;
 	}
 
-	public function setup_sections() {
-
+	public function setup_settings_sections() {
 		$args = array(
 			'before_section' => '<div class="ain-box ain-section ain-section-%s">',
 			'after_section'  => '</div>',
@@ -191,8 +130,7 @@ class AI_Narration_Admin {
 		}
 	}
 
-	public function setup_fields() {
-
+	public function setup_settings_fields() {
 		$ai_narration_services = array();
 		foreach (AI_NARRATION_SERVICES as $key => $service) {
 			if (isset($service['name'])) {
@@ -204,8 +142,6 @@ class AI_Narration_Admin {
 		$ai_narration_voices = AI_NARRATION_SERVICES['openai']['voices'];
 
 		$pages = array(
-			/************* SETTINGS *************/
-
 			'ain-settings' => array(
 
 				/*	Section: Service */
@@ -345,7 +281,6 @@ class AI_Narration_Admin {
 	}
 
 	public function field_callback( $arguments ) {
-
 		$value = get_option( $arguments['uid'] );
 
 		if( ! $value && isset($arguments['default']) ) {
@@ -361,7 +296,6 @@ class AI_Narration_Admin {
 			case 'hidden':
 				printf( '<input name="%1$s" id="%1$s" type="%2$s" placeholder="%3$s" value="%4$s" />', $arguments['uid'], $arguments['type'], $placeholder, $value );
 				break;
-
 
 			case 'textarea':
 				printf( '<textarea name="%1$s" id="%1$s" placeholder="%2$s" rows="5" cols="50">%3$s</textarea>', $arguments['uid'], $placeholder, $value );
@@ -404,7 +338,12 @@ class AI_Narration_Admin {
 		if( isset($arguments['supplemental']) && $supplemental = $arguments['supplemental'] ){
 			printf( '<p class="description">%s</p>', $supplemental );
 		}
+	}
 
+	public function admin_notice() { ?>
+		<div class="notice notice-success inline is-dismissible">
+			<p>Your settings have been updated</p>
+		</div><?php
 	}
 
 	/**
@@ -425,6 +364,7 @@ class AI_Narration_Admin {
 		}
 		die();
 	}
+
 	public function tag_lookup() {
 		$search = like_escape($_REQUEST['q']);
 		$args = array(
@@ -439,5 +379,87 @@ class AI_Narration_Admin {
 			echo "$name ($id)\n";
 		}
 		die();
+	}
+
+	/********************************************** NARRATIONS PAGE **********************************************/
+
+	function handle_generate_narration() {
+		check_ajax_referer('narration_nonce', 'nonce');
+		
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error('Unauthorized');
+		}
+		
+		$post_ids = $_POST['post_ids'];
+		
+		foreach ($post_ids as $post_id) {
+			$post = get_post($post_id);
+
+			$plugin = new AI_Narration();
+			$plugin_public = new AI_Narration_Public( $plugin->get_plugin_name(), $plugin->get_version() );
+
+			// TO DO: ensure response was successful and, if OpenAI returned an error, then serve up an error here accordingly
+			$plugin_public->request_new_audio('publish', 'draft', $post);
+		}
+		
+		wp_send_json_success();
+	}
+
+	function handle_delete_narration() {
+		check_ajax_referer('narration_nonce', 'nonce');
+		
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error('Unauthorized');
+		}
+		
+		$post_ids = $_POST['post_ids'];
+		
+		foreach ($post_ids as $post_id) {
+			$post = get_post($post_id);
+			$date = DateTime::createFromFormat('Y-m-d H:i:s', $post->post_date);
+			$year = $date->format('Y');
+			$slug = $post->post_name;
+			$narr_dir = AI_NARRATION_PATH . "/$year/$slug/";
+			if ( is_dir($narr_dir) ) {
+				rmdir($narr_dir);
+			}
+		}
+		
+		wp_send_json_success();
+	}
+	
+	/************************************************** GENERAL **************************************************/
+
+	public function enqueue_styles() {
+		/**
+		 * This function is provided for demonstration purposes only.
+		 *
+		 * An instance of this class should be passed to the run() function
+		 * defined in AI_Narration_Loader as all of the hooks are defined
+		 * in that particular class.
+		 *
+		 * The AI_Narration_Loader will then create the relationship
+		 * between the defined hooks and the functions defined in this
+		 * class.
+		 */
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ain-admin.css', array(), $this->version, 'all' );
+	}
+
+	public function enqueue_scripts() {
+		/**
+		 * This function is provided for demonstration purposes only.
+		 *
+		 * An instance of this class should be passed to the run() function
+		 * defined in AI_Narration_Loader as all of the hooks are defined
+		 * in that particular class.
+		 *
+		 * The AI_Narration_Loader will then create the relationship
+		 * between the defined hooks and the functions defined in this
+		 * class.
+		 */
+
+		wp_enqueue_script('suggest');
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ain-admin.js', array(), $this->version, false );
+		wp_localize_script( $this->plugin_name, 'narrationAdmin', array( 'nonce' => wp_create_nonce('narration_nonce') ) );
 	}
 }
