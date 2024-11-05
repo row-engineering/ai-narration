@@ -9,6 +9,7 @@ class AI_Narration_Endpoint {
 	private $api_service;
 	private $api_key;
 	private $api_url;
+	private $model;
 	private $voice;
 	private $debug;
 
@@ -19,6 +20,7 @@ class AI_Narration_Endpoint {
 		$this->api_service = get_option( 'ai_narration_service_vendor' )[0];
 		$this->api_key     = get_option( 'ai_narration_service_api_key' );
 		$this->api_url     = AI_NARRATION_SERVICES[$this->api_service]['endpoint'];
+		$this->model       = AI_NARRATION_SERVICES[$this->api_service]['models'][0]['model'];
 		$this->voice       = get_option( 'ai_narration_voice' )[0];
 
 		$this->debug = false;
@@ -90,32 +92,26 @@ class AI_Narration_Endpoint {
 	 * The index contains all basic story meta data from a WP Post
 	 * and references to all audio files required for a complete narration.
 	 *
-	 * If the index does not exits, it is created.
 	 */
 	private function update_post_index($data, $audio_index, $audio_dir) {
 		$index_data = array();
 		$index_file = "{$audio_dir}/index.json";
 
-		//	Get current index, or initialize a new one
-		if (!file_exists($index_file)) {
+		$timestamp = microtime(true);
+		$created = number_format($timestamp, 6, '.', '');
 
-			$timestamp = microtime(true);
-			$created = number_format($timestamp, 6, '.', '');
-
-			$index_data = $data;
-			$index_data['audio'] = array(
-				'model'   => 'tts-1',
-				'voice'   => $this->voice,
-				'created' => $created,
-				'total'   => $data['total'],
-				'tracks'  => array()
-			);
-			unset($index_data['text']);
-			unset($index_data['total']);
-			unset($index_data['segment']);
-		} else {
-			$index_data = json_decode(file_get_contents($index_file), true);
-		}
+		$index_data = $data;
+		$index_data['audio'] = array(
+			'service' => AI_NARRATION_SERVICES[$this->api_service]['name'],
+			'model'   => $this->model,
+			'voice'   => $this->voice,
+			'created' => $created,
+			'total'   => $data['total'],
+			'tracks'  => array()
+		);
+		unset($index_data['text']);
+		unset($index_data['total']);
+		unset($index_data['segment']);
 
 		$relative_path = str_replace(
 			wp_normalize_path(ABSPATH), '', wp_normalize_path("{$audio_dir}/audio_{$audio_index}.mp3")
@@ -184,7 +180,7 @@ class AI_Narration_Endpoint {
 	private function request_conversion($audio_text, $audio_index, $audio_dir) {
 
 		$data = [
-			'model' => 'tts-1',
+			'model' => $this->model,
 			'input' => $audio_text,
 			'voice' => $this->voice
 		];
