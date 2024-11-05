@@ -464,11 +464,10 @@ class AI_Narration_Public {
 			$slug = $this->post->post_name;
 			$index_file = AI_NARRATION_PATH . "/$year/$slug/index.json";
 			if ( file_exists($index_file) ) {
-				$audio_json = file_get_contents($index_file);
-				$audio_data = json_decode($audio_json);
-				if ( $audio_data->segments === count($audio_data->audio_paths) ) {
-					sort($audio_data->audio_paths);
-					echo "<script id='ai-narration-data'>$audio_json</script>";
+				$narration_json = file_get_contents($index_file);
+				$narration_data = json_decode($narration_json, true);
+				if ( $narration_data['audio']['total'] === count($narration_data['audio']['tracks']) ) {
+					echo "<script id='ai-narration-data'>$narration_json</script>";
 				}
 			}
 		}

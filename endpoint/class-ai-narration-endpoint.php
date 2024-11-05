@@ -121,11 +121,11 @@ class AI_Narration_Endpoint {
 			wp_normalize_path(ABSPATH), '', wp_normalize_path("{$audio_dir}/audio_{$audio_index}.mp3")
 		);
 
-	//	Update
+		//	Update
 		$index_data['audio']['tracks'][$audio_index] = $relative_path;
 		ksort($index_data['audio']['tracks']);
 
-	//	Save
+		//	Save
 		$result = file_put_contents($index_file, json_encode($index_data, JSON_PRETTY_PRINT));
 		if ($result === false) {
 			$this->apply_response_and_exit(500, 'Failed to create file.');
