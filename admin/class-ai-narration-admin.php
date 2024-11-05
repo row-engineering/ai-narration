@@ -383,7 +383,7 @@ class AI_Narration_Admin {
 
 	/********************************************** NARRATIONS PAGE **********************************************/
 
-	function handle_generate_narration() {
+	public function handle_generate_narration() {
 		check_ajax_referer('narration_nonce', 'nonce');
 		
 		if (!current_user_can('manage_options')) {
@@ -405,7 +405,7 @@ class AI_Narration_Admin {
 		wp_send_json_success();
 	}
 
-	function handle_delete_narration() {
+	public function handle_delete_narration() {
 		check_ajax_referer('narration_nonce', 'nonce');
 		
 		if (!current_user_can('manage_options')) {
@@ -415,17 +415,28 @@ class AI_Narration_Admin {
 		$post_ids = $_POST['post_ids'];
 		
 		foreach ($post_ids as $post_id) {
-			$post = get_post($post_id);
-			$date = DateTime::createFromFormat('Y-m-d H:i:s', $post->post_date);
-			$year = $date->format('Y');
-			$slug = $post->post_name;
-			$narr_dir = AI_NARRATION_PATH . "/$year/$slug/";
-			if ( is_dir($narr_dir) ) {
-				rmdir($narr_dir);
-			}
+			$this->delete_narration($post_id);
 		}
 		
 		wp_send_json_success();
+	}
+
+	private function delete_narration($post_id) {
+		$post = get_post($post_id);
+		$date = DateTime::createFromFormat('Y-m-d H:i:s', $post->post_date);
+		$year = $date->format('Y');
+		$slug = $post->post_name;
+		$narr_dir = AI_NARRATION_PATH . "/$year/$slug/";
+		if ( is_dir($narr_dir) ) {
+			$this->recursive_rmdir($narr_dir);
+		}
+	}
+
+	private function recursive_rmdir(string $directory) {
+    array_map( function(string $file) {
+			is_dir($file) ? recursive_rmdir($file) : unlink($file);
+		}, glob("$directory/*") );
+    return rmdir($directory);
 	}
 	
 	/************************************************** GENERAL **************************************************/

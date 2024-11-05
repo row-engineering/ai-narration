@@ -288,7 +288,9 @@ class AI_Narration_Public {
 			foreach ($coauthors as &$coauthor) {
 				$authors[] = $coauthor->display_name;
 			}
-		} else {
+		}
+
+		if ( empty($authors) ) {
 			$authors[] = get_the_author_meta( 'display_name', $this->post->post_author );
 		}
 
