@@ -104,8 +104,8 @@ class AI_Narration_Endpoint {
 
 			$index_data = $data;
 			$index_data['audio'] = array(
-				'model'   => '',
-				'voice'   => '',
+				'model'   => 'tts-1',
+				'voice'   => $this->voice,
 				'created' => $created,
 				'total'   => $data['total'],
 				'tracks'  => array()
