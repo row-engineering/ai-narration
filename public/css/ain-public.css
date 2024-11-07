@@ -222,6 +222,16 @@
 	transition: all 150ms ease-in;
 }
 
+@media (min-width: 768px) {
+	.ain:not(.ain--downpage) .ain-player__controls {
+		grid-template-areas: "play bwd fwd seek time volume speed";
+	}
+
+	.ain:not(.ain--downpage) .ain-player__seek {
+		margin: 0 15px 0 5px;
+	}
+}
+
 @media (hover: hover) {
 	.ain-player__seek:hover::-webkit-slider-thumb {
 		opacity: 1;
