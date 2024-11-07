@@ -51,9 +51,7 @@ class AI_Narration_Endpoint {
 
 		$post_data = $this->get_post_data();
 		if ( !empty($post_data) ) {
-
 			if ( isset($post_data['text']) && !empty($post_data['text']) ) {
-
 				$audio_dir   = $this->get_directory($post_data);
 				$audio_index = $post_data['segment'];
 				$audio_text  = $post_data['text'];
@@ -101,29 +99,39 @@ class AI_Narration_Endpoint {
 		$index_data = array();
 		$index_file = "{$audio_dir}/index.json";
 
+		$curr_index_data = false;
+		$query_in_progress = false;
+		if ( file_exists($index_file) ) {
+			$curr_index_data = json_decode(file_get_contents($index_file), true);
+			if ( $curr_index_data['audio']['total'] > count($curr_index_data['audio']['tracks']) ) {
+				$query_in_progress = true;
+			}
+		}
+
 		$timestamp = microtime(true);
 		$created = number_format($timestamp, 6, '.', '');
 
 		$index_data = $data;
 		$index_data['audio'] = array(
-			'service' => AI_NARRATION_SERVICES[$this->api_service]['name'],
-			'model'   => $this->model,
-			'voice'   => $this->voice,
-			'created' => $created,
-			'total'   => $data['total'],
-			'tracks'  => array()
+			'service'  => AI_NARRATION_SERVICES[$this->api_service]['name'],
+			'model'    => $this->model,
+			'voice'    => $this->voice,
+			'created'  => $created,
+			// 'duration' => 0,
+			'total'    => $data['total'],
+			'tracks'   => $query_in_progress ? $curr_index_data['audio']['tracks'] : array()
 		);
 		unset($index_data['text']);
 		unset($index_data['total']);
 		unset($index_data['segment']);
 
 		$relative_path = str_replace(
-			wp_normalize_path(ABSPATH), '', wp_normalize_path("{$audio_dir}/audio_{$audio_index}.mp3")
+			wp_normalize_path(ABSPATH), '', wp_normalize_path("/{$audio_dir}/audio_{$audio_index}.mp3")
 		);
 
 		//	Update
-		$index_data['audio']['tracks'][$audio_index] = $relative_path;
-		ksort($index_data['audio']['tracks']);
+		$index_data['audio']['tracks'][] = $relative_path;
+		sort($index_data['audio']['tracks']);
 
 		//	Save
 		$result = file_put_contents($index_file, json_encode($index_data, JSON_PRETTY_PRINT));
