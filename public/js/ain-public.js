@@ -7,25 +7,31 @@
 			if (!window.AINarrationData) {
 				return
 			}
-	
-			this.files = Object.values(AINarrationData.audio.tracks)
-	
+
 			document.body.classList.add('has-ai-narration')
+
+			this.files      = AINarrationData.audio.tracks
+			this.filesTotal = this.files.length
+			this.loadIdx    = 0
+			this.playIdx    = 0
+			this.preloadAud = null
+
 			this.insertPlayer()
 			this.saveSelectors()
 			this.setInitialState()
 			this.setContainerHeight()
 			this.addPlaybackEventListeners()
-			this.setUpEpisode()
+			this.setAudioInfo()
+			this.mediaSessionSetup()
 		},
-	
+
 		insertPlayer() {
 			const firstGraf = document.querySelector('.post-content > p:first-child')
 			if (firstGraf) {
 				firstGraf.insertAdjacentHTML('afterend', this.playerMarkup(true))
 			}
 		},
-	
+
 		playerMarkup() {
 			return `
 				<div class="ain__container">
@@ -72,11 +78,10 @@
 				</div>
 			`
 		},
-	
+
 		saveSelectors() {
 			this.container 	= document.querySelector('.ain__container')
 			this.element		= document.querySelector('.ain')
-			/* playback controls */
 			this.cta 				= document.querySelector('.ain-player__cta')
 			this.audio 			= document.getElementById('ain-track')
 			this.player 		= document.querySelector('.ain-player')
@@ -91,7 +96,7 @@
 			this.duration 	= document.querySelector('.ain-player__time-duration')
 			this.durDos			= document.querySelector('.ain-player__cta__msg-length')
 		},
-	
+
 		setInitialState() {
 			this.active 	= false
 			this.playing 	= false
@@ -99,19 +104,14 @@
 			this.playRate	= 1
 			this.volume		= 100
 		},
-	
+
 		setContainerHeight() {
 			// so that the space is held when the player jumps down to fixed position on scroll
 			this.container.style.minHeight = `${this.container.clientHeight}px`
 		},
-	
-		setUpEpisode() {
-			this.setAudioInfo()
-			this.mediaSessionSetup()
-		},
-	
-		setEpisodeMilestones() {
-			this.episodeMilestones = [
+
+		setAudioMilestones() {
+			this.audioMilestones = [
 				{
 					timestamp: Math.floor(this.audio.duration * .05),
 					percentage: 5
@@ -135,35 +135,35 @@
 			]
 			this.nextMilestoneIdx = 0
 		},
-	
+
 		setAudioInfo() {
 			if (this.audio.readyState > 0) {
 				this.setInitialView()
-				this.setEpisodeMilestones()
+				this.setAudioMilestones()
 			} else {
 				this.audio.addEventListener('loadedmetadata', () => {
 					this.setInitialView()
-					this.setEpisodeMilestones()
+					this.setAudioMilestones()
 				})
 			}
 		},
-	
+
 		setInitialView() {
 			this.seek.max = Math.floor(this.audio.duration)
 			this.duration.textContent = this.calculateTime(this.audio.duration)
 			this.durDos.textContent = this.calculateMinutes(this.audio.duration)
 		},
-	
+
 		addPlaybackEventListeners() {
-			this.audio.addEventListener('progress', () => this.displayBuffered())
 			this.cta.addEventListener('click', () => this.initialize())
+			this.audio.addEventListener('progress', () => this.displayBuffered())
 			this.play.addEventListener('click', () => this.playing ? this.onPause() : this.onPlay())
 			this.rewind.addEventListener('click', () => this.skipBack())
 			this.forward.addEventListener('click', () => this.skipForward())
 			this.speedBtn.addEventListener('click', () => this.togglePlaybackRate())
 			this.volumeRng.addEventListener('input', (e) => this.adjustVolume(e))
 			this.seek.addEventListener('input', (e) => this.onSliderInput(e))
-	
+
 			this.volumeBtn.addEventListener('click', () => {
 				// on mobile, you need click to open the volume slider, so we don't want it to toggle mute, too
 				if (window.matchMedia('(hover: hover)').matches) {
@@ -173,46 +173,76 @@
 				}
 			})
 		},
-	
+
 		/************
 		 * PLAYBACK *
 		 ************/
-	
+
 		initialize() {
 			this.active = true
 			this.player.dataset.active = 'true'
+			this.initSequentialLoading()
 			this.displayBuffered()
 			this.scrollObserver()
 			this.onPlay()
 		},
-	
+
+		initSequentialLoading() {
+			if (this.audio.readyState === 4) {
+				this.preloadNextClip()
+			} else {
+				this.preloadAud = this.audio
+				this.preloadAud.addEventListener('canplaythrough', () => this.preloadNextClip())
+			}
+			this.audio.addEventListener('ended', () => this.playNextClip())
+		},
+
+		preloadNextClip() {
+			if (this.loadIdx < this.filesTotal - 1) {
+				this.loadIdx++
+				console.log(`preload next clip: ${this.loadIdx + 1} - ${this.files[this.loadIdx]}`)
+				this.preloadAud = new Audio()
+				this.preloadAud.addEventListener('canplaythrough', () => this.preloadNextClip())
+				this.preloadAud.src = this.files[this.loadIdx]
+			}
+		},
+
+		playNextClip() {
+			if (this.playIdx < this.filesTotal - 1) {
+				this.playIdx++
+				console.log(`play next clip: ${this.playIdx + 1} - ${this.files[this.playIdx]}`)
+				this.audio.src = this.files[this.playIdx]
+				this.audio.play()
+			}
+		},
+
 		onPlay() {
 			this.audio.play()
 			requestAnimationFrame(() => this.whilePlaying())
 			this.playing = true
 			this.player.dataset.play = 'play'
-	
+
 			if (this.audio.readyState > 0) {
 				this.eventLog( 'audio_play' )
 			} else {
 				this.audio.addEventListener('loadedmetadata', () => this.eventLog( 'audio_play' ))
 			}
 		},
-	
+
 		onPause() {
 			this.audio.pause()
 			cancelAnimationFrame(this.raf)
 			this.playing = false
 			this.player.dataset.play = 'pause'
 		},
-	
+
 		skipBack(offset = 15) {
 			this.audio.currentTime -= offset
 			if (!this.playing) {
 				this.updateDisplay()
 			}
 		},
-	
+
 		skipForward(offset = 15) {
 			this.audio.currentTime += offset
 			if (this.audio.currentTime === this.audio.duration) {
@@ -222,29 +252,29 @@
 				this.updateDisplay()
 			}
 		},
-	
+
 		togglePlaybackRate() {
 			const playRates = [.75, 1, 1.25, 1.5, 1.75, 2]
 			const currentIdx = playRates.findIndex(pr => pr === this.playRate)
 			const nextIdx = currentIdx < playRates.length - 1 ? currentIdx + 1 : 0
-	
+
 			this.playRate = playRates[nextIdx]
 			this.audio.playbackRate = this.playRate
 			this.speedBtn.innerText = `${this.playRate}x`
 		},
-	
+
 		adjustVolume(e) {
 			this.volume = parseInt(e.target.value)
 			this.audio.volume = this.volume / 100
 			this.player.style.setProperty('--volume', `${this.volume}%`)
-	
+
 			if (this.volume === 0) {
 				this.mute()
 			} else if (this.muted) {
 				this.unmute()
 			}
 		},
-	
+
 		toggleMute() {
 			if (this.muted === false) {
 				this.mute()
@@ -254,19 +284,19 @@
 				this.player.style.setProperty('--volume', `${this.volume}%`)
 			}
 		},
-	
+
 		mute() {
 			this.audio.muted = true
 			this.muted = true
 			this.player.dataset.volume = 'off'
 		},
-	
+
 		unmute() {
 			this.audio.muted = false
 			this.muted = false
 			this.player.dataset.volume = 'on'
 		},
-	
+
 		onSliderInput(e) {
 			this.audio.currentTime = e.currentTarget.value
 			this.updateDisplay()
@@ -274,16 +304,16 @@
 				this.reset()
 			}
 		},
-	
+
 		whilePlaying() {
 			this.updateDisplay()
 			this.trackProgress()
 			this.raf = requestAnimationFrame(() => this.whilePlaying())
 		},
-	
+
 		trackProgress() {
 			if (this.nextMilestoneIdx < 100) {
-				const milestone = this.episodeMilestones[this.nextMilestoneIdx]
+				const milestone = this.audioMilestones[this.nextMilestoneIdx]
 				if (this.audio.currentTime > milestone.timestamp) {
 					const percentage_listened = milestone.percentage
 					if (milestone.percentage < 90) {
@@ -295,54 +325,53 @@
 					}
 				}
 			}
-	
 		},
-	
+
 		reset() {
 			this.active = false
 			this.player.dataset.active = 'false'
-	
+
 			this.audio.currentTime = 0
 			this.seek.value = 0
 			this.updateDisplay()
 			this.onPause()
 			this.removeScrollObserver()
 		},
-	
+
 		updateDisplay() {
 			this.displayTime()
 			this.displayProgress()
 		},
-	
+
 		displayTime() {
 			this.played.textContent = this.calculateTime(this.audio.currentTime)
 		},
-	
+
 		displayProgress() {
 			this.seek.value = Math.floor(this.audio.currentTime)
 			const percent = this.seek.value / this.seek.max * 100
 			this.player.style.setProperty('--played', `${percent}%`)
 		},
-	
+
 		displayBuffered() {
 			if (this.audio.buffered.length > 0) {
 				const bufferedAmount = Math.floor(this.audio.buffered.end(this.audio.buffered.length - 1))
 				this.player.style.setProperty('--buffered', `${bufferedAmount / this.seek.max * 100}%`)
 			}
 		},
-	
+
 		calculateTime(secs) {
 			const minutes = Math.floor(secs / 60)
 			const seconds = Math.floor(secs % 60)
 			const returnedSeconds = seconds < 10 ? `0${seconds}` : `${seconds}`
-	
+
 			return `${minutes}:${returnedSeconds}`
 		},
-	
+
 		calculateMinutes(secs) {
 			let minutes = Math.floor(secs / 60)
 			const hours = Math.floor(minutes / 60)
-	
+
 			let text
 			if (hours > 0) {
 				minutes = minutes % 60
@@ -350,10 +379,10 @@
 			} else {
 				text = `${minutes} ${minutes > 1 ? 'minutes' : 'minute'}`
 			}
-	
+
 			return text
 		},
-	
+
 		mediaSessionSetup() {
 			if ('mediaSession' in navigator) {
 				// metadata
@@ -361,7 +390,7 @@
 					title: AINarrationData.title,
 					artist: AINarrationData.authors.join(', ')
 				})
-	
+
 				// event listeners
 				navigator.mediaSession.setActionHandler('play', () => this.onPlay())
 				navigator.mediaSession.setActionHandler('pause', () => this.onPause())
@@ -377,11 +406,11 @@
 				})
 			}
 		},
-	
+
 		/*******
 		 * ETC *
 		 *******/
-	
+
 		scrollObserver() {
 			const showDownpage = entries => {
 				entries.forEach((entry) => {
@@ -399,11 +428,11 @@
 			this.observer = new IntersectionObserver((entries) => showDownpage(entries), { threshold: .001, rootMargin: '0px 0px' })
 			this.observer.observe(this.container)
 		},
-	
+
 		removeScrollObserver() {
 			this.observer.unobserve(this.container)
 		},
-	
+
 		eventLog( eventName, addtlParams = {} ) {
 			// const params = Object.assign({
 			// 	audio_duration: Math.floor(this.audio.duration),
