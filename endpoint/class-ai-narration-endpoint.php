@@ -18,6 +18,10 @@ class AI_Narration_Endpoint {
 	 */
 	public function __construct($options = array()) {
 		$this->api_service = get_option( 'ai_narration_service_vendor' )[0];
+		if (empty($this->api_service) || $this->api_service === 'none') {
+			$this->apply_response_and_exit(403, 'Forbidden. Missing service information.');
+		}
+
 		$this->api_key     = get_option( 'ai_narration_service_api_key' );
 		$this->api_url     = AI_NARRATION_SERVICES[$this->api_service]['endpoint'];
 		$this->model       = AI_NARRATION_SERVICES[$this->api_service]['models'][0]['model'];
