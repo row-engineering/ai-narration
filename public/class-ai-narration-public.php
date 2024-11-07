@@ -324,9 +324,10 @@ class AI_Narration_Public {
 			return false;
 		}
 
-		$post_terms = array_map(function($t) { return $t->slug; }, get_the_terms( $this->post_id, $this->exclusion_tax ));
+		$post_terms = get_the_terms( $this->post_id, $this->exclusion_tax );
 		if ( $post_terms ) {
-			if ( count(array_intersect($post_terms, $this->exclusion_terms)) > 0 ) {
+			$term_slugs = array_map(function($t) { return $t->slug; }, $post_terms );
+			if ( count(array_intersect($term_slugs, $this->exclusion_terms)) > 0 ) {
 				// error_log('is_post_eligible: FAIL: terms');
 				return false;
 			}
