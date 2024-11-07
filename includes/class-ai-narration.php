@@ -187,11 +187,9 @@ class AI_Narration {
 		$ai_narration_api = get_option( 'ai_narration_service_api_key' );
 
 		if ( !empty($ai_narration_vendor) && $ai_narration_vendor[0] !== 'none' && !empty($ai_narration_api) ) {
-			// $this->loader->add_action( 'init',               $plugin_public, 'add_translation_endpoints', 1 );
-			// $this->loader->add_action( 'template_redirect',  $plugin_public, 'prep_for_translation' );
-			// $this->loader->add_filter( 'row_js_var',         $plugin_public, 'update_global_js_var', 20, 1 );
 			$this->loader->add_action( 'wp_enqueue_scripts',     $plugin_public, 'enqueue_styles' );
 			$this->loader->add_action( 'wp_enqueue_scripts',     $plugin_public, 'enqueue_scripts' );
+			$this->loader->add_action( 'wp_footer',              $plugin_public, 'enqueue_svg_sprite' );
 			// $this->loader->add_filter( 'transition_post_status', $plugin_public, 'request_new_audio', 20, 3 );
 			$this->loader->add_action( 'wp_head',                $plugin_public, 'output_audio_js_obj', 20, 0 );
 		}

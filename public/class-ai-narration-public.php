@@ -461,15 +461,11 @@ class AI_Narration_Public {
 		$this->get_post_info();
 		$eligible_post = $this->is_post_eligible();
 		if ( $eligible_post ) {
-			$date = DateTime::createFromFormat('Y-m-d H:i:s', $this->post->post_date);
-			$year = $date->format('Y');
-			$slug = $this->post->post_name;
-			$index_file = AI_NARRATION_PATH . "/$year/$slug/index.json";
-			if ( file_exists($index_file) ) {
+			if ( $index_file = $this->get_index_file($this->post) ) {
 				$narration_json = file_get_contents($index_file);
 				$narration_data = json_decode($narration_json, true);
 				if ( $narration_data['audio']['total'] === count($narration_data['audio']['tracks']) ) {
-					echo "<script id='ai-narration-data'>$narration_json</script>";
+					echo "<script id='ai-narration-data'>window.AINarrationData = $narration_json</script>";
 				}
 			}
 		}
@@ -485,21 +481,11 @@ class AI_Narration_Public {
 	 * @since    1.0.0
 	 */
 	public function enqueue_styles() {
-
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in AI_Narration_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The AI_Narration_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ain-public.css', array(), $this->version, 'all' );
-
+		global $post;
+		$has_narration = $this->get_index_file($post);
+		if ( $has_narration ) {
+			wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ain-public.css', array(), $this->version, 'all' );
+		}
 	}
 
 	/**
@@ -508,21 +494,31 @@ class AI_Narration_Public {
 	 * @since    1.0.0
 	 */
 	public function enqueue_scripts() {
+		global $post;
+		$has_narration = $this->get_index_file($post);
+		if ( $has_narration ) {
+			wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ain-public.js', array(), $this->version, false );
+		}
+	}
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in AI_Narration_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The AI_Narration_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 *
-		 */
+	public function enqueue_svg_sprite() {
+		global $post;
+		$has_narration = $this->get_index_file($post);
+		if ( $has_narration ) {
+			$sprite = plugin_dir_path( __FILE__ ) . 'assets/sprite.svg';
+			if ( file_exists($sprite) ) {
+				echo '<div style="display: none;">';
+				include_once $sprite;
+				echo '</div>';
+			}
+		}
+	}
 
-		// wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ain-public.js', array( 'jquery' ), $this->version, false );
-
+	public function get_index_file( $post ) {
+		$date = DateTime::createFromFormat('Y-m-d H:i:s', $post->post_date);
+		$year = $date->format('Y');
+		$slug = $post->post_name;
+		$index_file = AI_NARRATION_PATH . "/$year/$slug/index.json";
+		return file_exists($index_file) ? $index_file : false;
 	}
 }
