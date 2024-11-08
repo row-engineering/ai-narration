@@ -1,5 +1,10 @@
 <?php
 
+// getID3 library is built-in with WordPress
+if (!class_exists('getID3')) {
+	require_once(ABSPATH . 'wp-includes/ID3/getid3.php');
+}
+
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
@@ -117,8 +122,8 @@ class AI_Narration_Endpoint {
 			'model'    => $this->model,
 			'voice'    => $this->voice,
 			'created'  => $created,
-			// 'duration' => 0,
 			'total'    => $data['total'],
+			'duration' => $query_in_progress ? $curr_index_data['audio']['duration'] : 0,
 			'tracks'   => $query_in_progress ? $curr_index_data['audio']['tracks'] : array()
 		);
 		unset($index_data['text']);
@@ -129,9 +134,15 @@ class AI_Narration_Endpoint {
 			wp_normalize_path(ABSPATH), '', wp_normalize_path("/{$audio_dir}/audio_{$audio_index}.mp3")
 		);
 
-		//	Update
+		//	Update: track path
 		$index_data['audio']['tracks'][] = $relative_path;
 		sort($index_data['audio']['tracks']);
+
+		//	Update: total duration
+		$getID3    = new getID3();
+		$file_info = $getID3->analyze("{$audio_dir}/audio_{$audio_index}.mp3");
+		$duration  = $file_info['playtime_seconds'];
+		$index_data['audio']['duration'] += $duration;
 
 		//	Save
 		$result = file_put_contents($index_file, json_encode($index_data, JSON_PRETTY_PRINT));

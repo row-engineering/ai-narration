@@ -10,19 +10,21 @@
 
 			document.body.classList.add('has-ai-narration')
 
-			this.files      = AINarrationData.audio.tracks
-			this.filesTotal = this.files.length
-			this.loadIdx    = 0
-			this.playIdx    = 0
-			this.preloadAud = null
+			this.files        = AINarrationData.audio.tracks
+			this.loadIdx      = 0      // which audio file are we loading?
+			this.playIdx      = 0      // which audio file are we playing?
+			this.bufferedTime = [0]    // tracking buffered time for all files
+			this.playedTime   = [0]    // tracking played time for all files
+			this.totalPlay    = 0      // tracking played time for all files
+			this.audioLength  = Math.floor(AINarrationData.audio.duration)
 
 			this.insertPlayer()
 			this.saveSelectors()
 			this.setInitialState()
 			this.setContainerHeight()
 			this.addPlaybackEventListeners()
-			this.setAudioInfo()
 			this.mediaSessionSetup()
+			this.setAudioMilestones()
 		},
 
 		insertPlayer() {
@@ -44,7 +46,7 @@
 								</div>
 								<div class="ain-player__cta__msg">
 									<span class="ain-player__cta__msg-text">Listen to story</span>
-									<span class="ain-player__cta__msg-length meta">X minutes</span>
+									<span class="ain-player__cta__msg-length meta">${this.calculateMinutes()}</span>
 								</div>
 							</button>
 							<div class="ain-player__controls">
@@ -60,7 +62,7 @@
 								</button>
 								<input class="ain-player__seek" type="range" max="100" value="0" aria-label="seek">
 								<div class="ain-player__time meta">
-									<span class="ain-player__time-played">0:00</span><span class="ain-player__time-slash">/</span><span class="ain-player__time-duration">$duration</span>
+									<span class="ain-player__time-played">0:00</span><span class="ain-player__time-slash">/</span><span class="ain-player__time-duration">${this.calculateTime(this.audioLength)}</span>
 								</div>
 								<div class="ain-player__volume">
 									<div class="ain-player__volume__range">
@@ -93,8 +95,6 @@
 			this.volumeBtn	= document.querySelector('.ain-player__volume__button')
 			this.seek 			= document.querySelector('.ain-player__seek')
 			this.played 		= document.querySelector('.ain-player__time-played')
-			this.duration 	= document.querySelector('.ain-player__time-duration')
-			this.durDos			= document.querySelector('.ain-player__cta__msg-length')
 		},
 
 		setInitialState() {
@@ -103,6 +103,7 @@
 			this.muted 		= false
 			this.playRate	= 1
 			this.volume		= 100
+			this.seek.max = Math.floor(this.audioLength)
 		},
 
 		setContainerHeight() {
@@ -113,46 +114,32 @@
 		setAudioMilestones() {
 			this.audioMilestones = [
 				{
-					timestamp: Math.floor(this.audio.duration * .05),
+					timestamp: Math.floor(this.audioLength * .05),
 					percentage: 5
 				},
 				{
-					timestamp: Math.floor(this.audio.duration * .25),
+					timestamp: Math.floor(this.audioLength * .25),
 					percentage: 25
 				},
 				{
-					timestamp: Math.floor(this.audio.duration * .5),
+					timestamp: Math.floor(this.audioLength * .5),
 					percentage: 50
 				},
 				{
-					timestamp: Math.floor(this.audio.duration * .7),
+					timestamp: Math.floor(this.audioLength * .7),
 					percentage: 70
 				},
 				{
-					timestamp: Math.floor(this.audio.duration * .9),
+					timestamp: Math.floor(this.audioLength * .9),
 					percentage: 90
 				},
 			]
 			this.nextMilestoneIdx = 0
 		},
 
-		setAudioInfo() {
-			if (this.audio.readyState > 0) {
-				this.setInitialView()
-				this.setAudioMilestones()
-			} else {
-				this.audio.addEventListener('loadedmetadata', () => {
-					this.setInitialView()
-					this.setAudioMilestones()
-				})
-			}
-		},
-
-		setInitialView() {
-			this.seek.max = Math.floor(this.audio.duration)
-			this.duration.textContent = this.calculateTime(this.audio.duration)
-			this.durDos.textContent = this.calculateMinutes(this.audio.duration)
-		},
+		/************
+		 * PLAYBACK *
+		 ************/
 
 		addPlaybackEventListeners() {
 			this.cta.addEventListener('click', () => this.initialize())
@@ -174,10 +161,6 @@
 			})
 		},
 
-		/************
-		 * PLAYBACK *
-		 ************/
-
 		initialize() {
 			this.active = true
 			this.player.dataset.active = 'true'
@@ -191,26 +174,23 @@
 			if (this.audio.readyState === 4) {
 				this.preloadNextClip()
 			} else {
-				this.preloadAud = this.audio
-				this.preloadAud.addEventListener('canplaythrough', () => this.preloadNextClip())
+				this.audio.addEventListener('canplaythrough', () => this.preloadNextClip())
 			}
 			this.audio.addEventListener('ended', () => this.playNextClip())
 		},
 
 		preloadNextClip() {
-			if (this.loadIdx < this.filesTotal - 1) {
+			if (this.loadIdx < this.files.length - 1) {
 				this.loadIdx++
-				console.log(`preload next clip: ${this.loadIdx + 1} - ${this.files[this.loadIdx]}`)
-				this.preloadAud = new Audio()
-				this.preloadAud.addEventListener('canplaythrough', () => this.preloadNextClip())
-				this.preloadAud.src = this.files[this.loadIdx]
+				const preloading = new Audio()
+				preloading.addEventListener('canplaythrough', () => this.preloadNextClip())
+				preloading.src = this.files[this.loadIdx]
 			}
 		},
 
 		playNextClip() {
-			if (this.playIdx < this.filesTotal - 1) {
+			if (this.playIdx < this.files.length - 1) {
 				this.playIdx++
-				console.log(`play next clip: ${this.playIdx + 1} - ${this.files[this.playIdx]}`)
 				this.audio.src = this.files[this.playIdx]
 				this.audio.play()
 			}
@@ -245,7 +225,7 @@
 
 		skipForward(offset = 15) {
 			this.audio.currentTime += offset
-			if (this.audio.currentTime === this.audio.duration) {
+			if (this.audio.currentTime === this.audioLength) {
 				this.reset()
 			}
 			if (!this.playing) {
@@ -300,7 +280,7 @@
 		onSliderInput(e) {
 			this.audio.currentTime = e.currentTarget.value
 			this.updateDisplay()
-			if (this.audio.currentTime === Math.floor(this.audio.duration)) {
+			if (this.audio.currentTime === Math.floor(this.audioLength)) {
 				this.reset()
 			}
 		},
@@ -339,25 +319,32 @@
 		},
 
 		updateDisplay() {
+			this.playedTime[this.playIdx] = this.audio.currentTime
+			this.totalPlay = Math.floor(this.playedTime.reduce((total,num) => total + num), 0)
+	
 			this.displayTime()
 			this.displayProgress()
 		},
 
 		displayTime() {
-			this.played.textContent = this.calculateTime(this.audio.currentTime)
+			this.played.textContent = this.calculateTime(this.totalPlay)
 		},
 
 		displayProgress() {
-			this.seek.value = Math.floor(this.audio.currentTime)
-			const percent = this.seek.value / this.seek.max * 100
+			this.seek.value = this.totalPlay
+			const percent = this.totalPlay / this.audioLength * 100
 			this.player.style.setProperty('--played', `${percent}%`)
 		},
 
 		displayBuffered() {
-			if (this.audio.buffered.length > 0) {
-				const bufferedAmount = Math.floor(this.audio.buffered.end(this.audio.buffered.length - 1))
-				this.player.style.setProperty('--buffered', `${bufferedAmount / this.seek.max * 100}%`)
+			if (this.audio.buffered.length === 0) {
+				return
 			}
+
+			const fileBufferedTime = Math.floor(this.audio.buffered.end(this.audio.buffered.length - 1))
+			this.bufferedTime[this.playIdx] = fileBufferedTime
+			const totalBufferedTime = Math.floor(this.bufferedTime.reduce((total,num) => total + num), 0)
+			this.player.style.setProperty('--buffered', `${totalBufferedTime / this.audioLength * 100}%`)
 		},
 
 		calculateTime(secs) {
@@ -368,8 +355,8 @@
 			return `${minutes}:${returnedSeconds}`
 		},
 
-		calculateMinutes(secs) {
-			let minutes = Math.floor(secs / 60)
+		calculateMinutes() {
+			let minutes = Math.floor(this.audioLength / 60)
 			const hours = Math.floor(minutes / 60)
 
 			let text
@@ -435,7 +422,7 @@
 
 		eventLog( eventName, addtlParams = {} ) {
 			// const params = Object.assign({
-			// 	audio_duration: Math.floor(this.audio.duration),
+			// 	audio_duration: Math.floor(this.audioLength),
 			// 	audio_title: AINarrationData.title,
 			// 	audio_url: location.href
 			// }, addtlParams)
