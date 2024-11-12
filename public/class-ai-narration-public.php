@@ -483,6 +483,8 @@ class AI_Narration_Public {
 	 */
 	public function enqueue_styles() {
 		global $post;
+		if (!is_single()) return;
+
 		$has_narration = $this->get_index_file($post);
 		if ( $has_narration ) {
 			wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ain-public.css', array(), $this->version, 'all' );
@@ -496,6 +498,8 @@ class AI_Narration_Public {
 	 */
 	public function enqueue_scripts() {
 		global $post;
+		if (!is_single()) return;
+
 		$has_narration = $this->get_index_file($post);
 		if ( $has_narration ) {
 			wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ain-public.js', array(), $this->version, false );
@@ -504,6 +508,8 @@ class AI_Narration_Public {
 
 	public function enqueue_svg_sprite() {
 		global $post;
+		if (!is_single()) return;
+
 		$has_narration = $this->get_index_file($post);
 		if ( $has_narration ) {
 			$sprite = plugin_dir_path( __FILE__ ) . 'assets/sprite.svg';
@@ -516,6 +522,8 @@ class AI_Narration_Public {
 	}
 
 	public function get_index_file( $post ) {
+		if (!$post) return;
+
 		$date = DateTime::createFromFormat('Y-m-d H:i:s', $post->post_date);
 		$year = $date->format('Y');
 		$slug = $post->post_name;
