@@ -445,13 +445,14 @@
 			this.observer.unobserve(this.container)
 		},
 
+		// TO DO: move into core site repo
 		eventLog( eventName, addtlParams = {} ) {
-			// const params = Object.assign({
-			// 	audio_duration: Math.floor(this.audioLength),
-			// 	audio_title: AINarrationData.title,
-			// 	audio_url: location.href
-			// }, addtlParams)
-			// gtag('event', eventName, params)
+			const params = Object.assign({
+				audio_duration: Math.floor(this.audioLength),
+				audio_title: AINarrationData.title,
+				audio_url: location.href
+			}, addtlParams)
+			gtag('event', eventName, params)
 		},
 	}
 
