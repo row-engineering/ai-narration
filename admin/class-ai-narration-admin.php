@@ -119,7 +119,7 @@ class AI_Narration_Admin {
 		add_settings_section( 'ai_narration_features',   'Features',  array( $this, 'section_callback' ),  'ain-settings',  $args );
 
 		$args['section_class'] = 'front-end-config';
-		add_settings_section( 'ai_narration_frontend',   'Features',  array( $this, 'section_callback' ),  'ain-settings',  $args );
+		add_settings_section( 'ai_narration_frontend',   'Front-End',  array( $this, 'section_callback' ),  'ain-settings',  $args );
 
 		$args['section_class'] = 'exclusions';
 		add_settings_section( 'ai_narration_exclusions', 'Exclusions', array( $this, 'section_callback' ),  'ain-settings', $args );
