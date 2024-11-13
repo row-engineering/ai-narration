@@ -424,21 +424,21 @@
 			this.observer = new IntersectionObserver((entries) => showDownpage(entries), { threshold: .001, rootMargin: '0px 0px' })
 			this.observer.observe(this.container)
 			
-			const footer = document.querySelector(AINarrationData.config.footerSelector)
-			if (footer) {
-				const hideAtFooter = entries => {
-					entries.forEach((entry) => {
-						if (entry.intersectionRatio > 0) {
-							this.element.classList.add('ain--fadeout')
-							window.setTimeout(() => this.onPause(), 150)
-						} else {
-							this.element.classList.remove('ain--fadeout')
-						}
-					})
-				}
-				this.observer = new IntersectionObserver((entries) => hideAtFooter(entries), { threshold: .01, rootMargin: '0px 0px' })
-				this.observer.observe(footer)
-			}
+			// const footer = document.querySelector(AINarrationData.config.footerSelector)
+			// if (footer) {
+			// 	const hideAtFooter = entries => {
+			// 		entries.forEach((entry) => {
+			// 			if (entry.intersectionRatio > 0) {
+			// 				this.element.classList.add('ain--fadeout')
+			// 				window.setTimeout(() => this.onPause(), 150)
+			// 			} else {
+			// 				this.element.classList.remove('ain--fadeout')
+			// 			}
+			// 		})
+			// 	}
+			// 	this.observer = new IntersectionObserver((entries) => hideAtFooter(entries), { threshold: .01, rootMargin: '0px 0px' })
+			// 	this.observer.observe(footer)
+			// }
 		},
 
 		removeScrollObserver() {

@@ -468,7 +468,6 @@ class AI_Narration_Public {
 				if ( $narration_data['audio']['total'] === count($narration_data['audio']['tracks']) ) {
 					$narration_data['config'] = array();
 					$narration_data['config']['learnMoreLink'] = get_option('learn_more_link');
-					$narration_data['config']['footerSelector'] = get_option('footer_selector');
 					$narration_json = json_encode($narration_data);
 					echo "<script id='ai-narration-data'>window.AINarrationData = $narration_json</script>";
 				}

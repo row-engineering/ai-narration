@@ -508,11 +508,11 @@
 	animation: fade-out 500ms ease forwards;
 }
 
-.ain.ain--downpage.ain--fadeout {
+/* .ain.ain--downpage.ain--fadeout {
 	opacity: 0;
 	animation: none;
 	pointer-events: none;
-}
+} */
 
 @media (min-width: 640px) {
 	.ain.ain--downpage {
