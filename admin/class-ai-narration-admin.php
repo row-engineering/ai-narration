@@ -223,13 +223,6 @@ class AI_Narration_Admin {
 					'section' => 'ai_narration_frontend',
 					'type'    => 'text',
 				),
-				array(
-					'uid'     => 'footer_selector',
-					'label'   => 'Footer Element Selector',
-					'section' => 'ai_narration_frontend',
-					'type'    => 'text',
-					'default' => '.footer',
-				),
 
 				/*	Section: Exclusions */
 
