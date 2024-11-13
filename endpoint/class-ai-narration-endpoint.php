@@ -84,9 +84,9 @@ class AI_Narration_Endpoint {
 	private function get_directory($data) {
 		$date = DateTime::createFromFormat('Y-m-d H:i:s', $data['date']);
 		$year = $date->format('Y');
-		$dir = AI_NARRATION_PATH . '/' . $year . '/' . $data['slug'];
-		if (!is_dir($dir)) {
-			if (!mkdir($dir, 0777, true)) {
+		$dir = "/$year/{$data['slug']}";
+		if ( !is_dir(AI_NARRATION_PATH . $dir) ) {
+			if ( !mkdir(AI_NARRATION_PATH . $dir, 0777, true) ) {
 				$dir = false;
 			}
 		}
@@ -102,7 +102,8 @@ class AI_Narration_Endpoint {
 	 */
 	private function update_post_index($data, $audio_index, $audio_dir) {
 		$index_data = array();
-		$index_file = "{$audio_dir}/index.json";
+		$index_file = AI_NARRATION_PATH . "{$audio_dir}/index.json";
+		$audio_path = "{$audio_dir}/audio_{$audio_index}.mp3";
 
 		$curr_index_data = false;
 		$query_in_progress = false;
@@ -130,17 +131,13 @@ class AI_Narration_Endpoint {
 		unset($index_data['total']);
 		unset($index_data['segment']);
 
-		$relative_path = str_replace(
-			wp_normalize_path(ABSPATH), '', wp_normalize_path("/{$audio_dir}/audio_{$audio_index}.mp3")
-		);
-
 		//	Update: track path
-		$index_data['audio']['tracks'][] = $relative_path;
+		$index_data['audio']['tracks'][] = wp_normalize_path(AI_NARRATION_DIR . $audio_path);
 		sort($index_data['audio']['tracks']);
 
 		//	Update: total duration
 		$getID3    = new getID3();
-		$file_info = $getID3->analyze("{$audio_dir}/audio_{$audio_index}.mp3");
+		$file_info = $getID3->analyze(AI_NARRATION_PATH . $audio_path);
 		$duration  = $file_info['playtime_seconds'];
 		$index_data['audio']['duration'] += $duration;
 
@@ -211,7 +208,7 @@ class AI_Narration_Endpoint {
 		$response = $this->send_request($data);
 
 		if ($response) {
-			$file_name = "{$audio_dir}/audio_{$audio_index}.mp3";
+			$file_name = AI_NARRATION_PATH . "{$audio_dir}/audio_{$audio_index}.mp3";
 			file_put_contents($file_name, $response);
 		} else {
 			return false;
