@@ -118,6 +118,9 @@ class AI_Narration_Admin {
 		$args['section_class'] = 'features';
 		add_settings_section( 'ai_narration_features',   'Features',  array( $this, 'section_callback' ),  'ain-settings',  $args );
 
+		$args['section_class'] = 'front-end-config';
+		add_settings_section( 'ai_narration_frontend',   'Features',  array( $this, 'section_callback' ),  'ain-settings',  $args );
+
 		$args['section_class'] = 'exclusions';
 		add_settings_section( 'ai_narration_exclusions', 'Exclusions', array( $this, 'section_callback' ),  'ain-settings', $args );
 	}
@@ -201,12 +204,6 @@ class AI_Narration_Admin {
 					'section' => 'ai_narration_features',
 					'type'    => 'text',
 				),
-				array(
-					'uid'     => 'learn_more_link',
-					'label'   => 'Learn More Link (optional)',
-					'section' => 'ai_narration_features',
-					'type'    => 'text',
-				),
 
 				// TO DO: how to handle this value changing? move all previous files?
 				// array(
@@ -217,6 +214,22 @@ class AI_Narration_Admin {
 				// 	'default' => 'narrations',
 				// 	'supplemental' => 'Directory structure: ai-narration/DIRECTORY-NAME/YEAR/POST-SLUG/'
 				// ),
+
+				/*	Section: Front-End Config */
+
+				array(
+					'uid'     => 'learn_more_link',
+					'label'   => 'Learn More Link (optional)',
+					'section' => 'ai_narration_frontend',
+					'type'    => 'text',
+				),
+				array(
+					'uid'     => 'footer_selector',
+					'label'   => 'Footer Element Selector',
+					'section' => 'ai_narration_frontend',
+					'type'    => 'text',
+					'default' => '.footer',
+				),
 
 				/*	Section: Exclusions */
 
