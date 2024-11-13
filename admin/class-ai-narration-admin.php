@@ -201,6 +201,12 @@ class AI_Narration_Admin {
 					'section' => 'ai_narration_features',
 					'type'    => 'text',
 				),
+				array(
+					'uid'     => 'learn_more_link',
+					'label'   => 'Learn More Link (optional)',
+					'section' => 'ai_narration_features',
+					'type'    => 'text',
+				),
 
 				// TO DO: how to handle this value changing? move all previous files?
 				// array(

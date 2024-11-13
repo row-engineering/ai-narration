@@ -35,20 +35,29 @@
 		},
 
 		playerMarkup() {
+			learnMoreLink = ''
+			if (AINarrationData.learn_more_link) {
+				learnMoreLink = `
+					<a class="ain-player__about" href="${learnMoreLink}" target="_blank">Learn more</a>
+				`
+			}
 			return `
 				<div class="ain__container">
 					<div class="ain">
 						<div class="ain-player" data-play="pause" data-volume="on" data-active="false">
 							<audio id="ain-track" src="${this.files[0]}" preload="metadata"></audio>
-							<button class="ain-player__cta">
-								<div class="ain-player__cta__icon ain-player__icon ain-player__icon--large">
-									<svg id="play-icon" class="play-icon"><use xlink:href="#ain-play"></use></svg>
-								</div>
-								<div class="ain-player__cta__msg">
-									<span class="ain-player__cta__msg-text">Listen to story</span>
-									<span class="ain-player__cta__msg-length meta">${this.calculateMinutes()}</span>
-								</div>
-							</button>
+							<div class="ain-player__intro">
+								<button class="ain-player__cta">
+									<div class="ain-player__cta__icon ain-player__icon ain-player__icon--large">
+										<svg id="play-icon" class="play-icon"><use xlink:href="#ain-play"></use></svg>
+									</div>
+									<div class="ain-player__cta__msg">
+										<span class="ain-player__cta__msg-text">Listen to story</span>
+										<span class="ain-player__cta__msg-length meta">${this.calculateMinutes()}</span>
+									</div>
+								</button>
+								${learnMoreLink}
+							</div>
 							<div class="ain-player__controls">
 								<button class="ain-player__play ain-player__icon ain-player__icon--large" aria-label="Play/pause this episode">
 									<svg id="play-icon" class="play-icon"><use xlink:href="#ain-play"></use></svg>
@@ -60,10 +69,6 @@
 								<button class="ain-player__skip ain-player__skip--fwd ain-player__icon ain-player__icon--small" aria-label="skip forward">
 									<svg><use xlink:href="#ain-skip-forward"></use></svg>
 								</button>
-								<input class="ain-player__seek" type="range" max="100" value="0" aria-label="seek">
-								<div class="ain-player__time meta">
-									<span class="ain-player__time-played">0:00</span><span class="ain-player__time-slash">/</span><span class="ain-player__time-duration">${this.calculateTime(this.audioLength)}</span>
-								</div>
 								<div class="ain-player__volume">
 									<div class="ain-player__volume__range">
 										<input class="ain-player__volume__range-input" type="range" max="100" value="100" aria-label="adjust volume">
@@ -73,7 +78,11 @@
 										<svg id="muted-icon"><use xlink:href="#ain-muted"></use></svg>
 									</button>
 								</div>
-								<button class="ain-player__speed meta" aria-label="toggle playback speed">1x</button>
+								<input class="ain-player__seek" type="range" max="100" value="0" aria-label="seek">
+								<div class="ain-player__time meta">
+									<span class="ain-player__time-played">0:00</span><span class="ain-player__time-slash">/</span><span class="ain-player__time-duration">${this.calculateTime(this.audioLength)}</span>
+								</div>
+								<button class="ain-player__speed meta" aria-label="toggle playback speed"><span>1x</span></button>
 							</div>
 						</div>
 					</div>
@@ -240,7 +249,7 @@
 
 			this.playRate = playRates[nextIdx]
 			this.audio.playbackRate = this.playRate
-			this.speedBtn.innerText = `${this.playRate}x`
+			this.speedBtn.innerHTML = `<span>${this.playRate}x</span>`
 		},
 
 		adjustVolume(e) {
@@ -321,7 +330,7 @@
 		updateDisplay() {
 			this.playedTime[this.playIdx] = this.audio.currentTime
 			this.totalPlay = Math.floor(this.playedTime.reduce((total,num) => total + num), 0)
-	
+
 			this.displayTime()
 			this.displayProgress()
 		},
