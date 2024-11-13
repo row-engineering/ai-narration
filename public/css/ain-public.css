@@ -20,17 +20,8 @@
 }
 
 @media (hover: hover) {
-	.ain-player__icon--large:hover svg {
+	.ain-player__icon:hover svg {
 		fill: var(--bright);
-	}
-
-	.ain-player__icon--small {
-		opacity: 1;
-		transition: opacity 150ms ease-out;
-	}
-
-	.ain-player__icon--small:hover {
-		opacity: .5;
 	}
 
 	.ain-player__speed:hover span {
@@ -166,6 +157,7 @@
 .ain-player .ain-player__about {
 	color: var(--ash, #555555);
 	font-size: 1.2rem;
+	line-height: 1;
 	border-bottom: 1px solid var(--ash, #555555);
 }
 
@@ -217,7 +209,7 @@
 .ain-player__seek {
 	grid-area: seek;
 	position: relative;
-	width: calc(100% - 20px);
+	width: 100%;
 	min-width: 50px;
 	background-color: var(--ash, #555555);
 	transition: width 150ms ease-out;
@@ -266,6 +258,7 @@
 
 	.ain:not(.ain--downpage) .ain-player__seek {
 		margin: 0 15px 0 5px;
+		width: calc(100% - 20px);
 	}
 }
 
