@@ -16,7 +16,7 @@
 			this.bufferedTime = [0]    // tracking buffered time for all files
 			this.playedTime   = [0]    // tracking played time for all files
 			this.totalPlay    = 0      // tracking played time for all files
-			this.audioLength  = Math.floor(AINarrationData.audio.duration)
+			this.audioLength  = Math.floor(AINarrationData.audio.duration.reduce((total,num) => total + num), 0)
 
 			this.insertPlayer()
 			this.saveSelectors()
@@ -445,13 +445,14 @@
 			this.observer.unobserve(this.container)
 		},
 
+		// TO DO: move into core site repo
 		eventLog( eventName, addtlParams = {} ) {
-			// const params = Object.assign({
-			// 	audio_duration: Math.floor(this.audioLength),
-			// 	audio_title: AINarrationData.title,
-			// 	audio_url: location.href
-			// }, addtlParams)
-			// gtag('event', eventName, params)
+			const params = Object.assign({
+				audio_duration: Math.floor(this.audioLength),
+				audio_title: AINarrationData.title,
+				audio_url: location.href
+			}, addtlParams)
+			gtag('event', eventName, params)
 		},
 	}
 

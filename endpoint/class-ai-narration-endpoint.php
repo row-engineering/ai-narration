@@ -124,7 +124,7 @@ class AI_Narration_Endpoint {
 			'voice'    => $this->voice,
 			'created'  => $created,
 			'total'    => $data['total'],
-			'duration' => $query_in_progress ? $curr_index_data['audio']['duration'] : 0,
+			'duration' => $query_in_progress ? $curr_index_data['audio']['duration'] : array(),
 			'tracks'   => $query_in_progress ? $curr_index_data['audio']['tracks'] : array()
 		);
 		unset($index_data['text']);
@@ -135,11 +135,11 @@ class AI_Narration_Endpoint {
 		$index_data['audio']['tracks'][] = wp_normalize_path(AI_NARRATION_DIR . $audio_path);
 		sort($index_data['audio']['tracks']);
 
-		//	Update: total duration
+		//	Update: durations
 		$getID3    = new getID3();
 		$file_info = $getID3->analyze(AI_NARRATION_PATH . $audio_path);
 		$duration  = $file_info['playtime_seconds'];
-		$index_data['audio']['duration'] += $duration;
+		$index_data['audio']['duration'][$audio_index - 1] = $duration;
 
 		//	Save
 		$result = file_put_contents($index_file, json_encode($index_data, JSON_PRETTY_PRINT));

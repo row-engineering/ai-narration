@@ -475,6 +475,79 @@ class AI_Narration_Public {
 		}
 	}
 
+	/**
+	 * {
+	 * 		"@type": "MediaObject",
+	 * 		"contentUrl": "https://www.yourwebsite.com/wp-content/uploads/audio_1.mp3",
+	 * 		"encodingFormat": "audio/mpeg",
+	 * 		"duration": "PT5M30S",
+	 * 		"position": 1,
+	 * 		"description": "Part 1 of the audio narration",
+	 * 		"inLanguage": "en",
+	 * 		"isPartOf": {
+	 * 			"@type": "CreativeWork",
+	 * 			"@id": "https://www.yourwebsite.com/your-article-url/"
+	 * 		}
+	 * }
+	 */
+	public function output_audio_schema($schema) {
+		global $post;
+
+		$date = DateTime::createFromFormat('Y-m-d H:i:s', $post->post_date);
+		$year = $date->format('Y');
+		$slug = $post->post_name;
+		$index_file = AI_NARRATION_PATH . "/$year/$slug/index.json";
+		$has_narration = file_exists($index_file);
+
+		if ($has_narration) {
+			$article_schema_idx = $this->find_newsarticle_schema($schema['@graph']);
+
+			if ($article_schema_idx > -1) {
+				if ( !$schema['@graph'][$article_schema_idx]['associatedMedia'] ) {
+					$schema['@graph'][$article_schema_idx]['associatedMedia'] = array();
+				}
+	
+				$index_data = json_decode(file_get_contents($index_file), true);
+				$tracks = $index_data['audio']['tracks'];
+				foreach ( $tracks as $idx => $track ) {
+					$track_num = $idx + 1;
+					$schema['@graph'][$article_schema_idx]['associatedMedia'][] = array(
+						'@type'          => 'AudioObject',
+						'contentUrl'     => $index_data['url'],
+						'encodingFormat' => 'audio/mpeg',
+						'position'       => $track_num,
+						'duration'       => $this->get_iso8601_duration($index_data['audio']['duration'][$idx]),
+						'name'           => $schema['@graph'][$article_schema_idx]['headline'],
+						'description'    => $schema['@graph'][$article_schema_idx]['description'],
+						'dateUploaded'   => $schema['@graph'][$article_schema_idx]['dateModified'],
+						'inLanguage'     => 'en',
+						'isPartOf'       => array(
+							'@type' => 'CreativeWork',
+							'@id'   => $index_data['url']
+						)
+					);
+				}
+			}
+		}
+
+		return $schema;
+	}
+
+	private function get_iso8601_duration($seconds) {
+		$minutes = floor($seconds / 60);
+		$seconds = floor($seconds % 60);
+		return "PT{$minutes}M{$seconds}S";
+	}
+
+	private function find_newsarticle_schema($graph) {
+		foreach ($graph as $idx => $item) {
+			if (is_array($item) && isset($item['@type']) && $item['@type'] === 'NewsArticle') {
+				return $idx;
+			}
+		}
+		return -1;
+	}
+
 	/**************************
 	 * ENQUEUE SCRIPTS/STYLES *
 	 **************************/
