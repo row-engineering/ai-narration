@@ -16,7 +16,7 @@
 			this.bufferedTime = [0]    // tracking buffered time for all files
 			this.playedTime   = [0]    // tracking played time for all files
 			this.totalPlay    = 0      // tracking played time for all files
-			this.audioLength  = Math.floor(AINarrationData.audio.duration.reduce((total,num) => total + num), 0)
+			this.audioLength  = Math.floor(Object.values(AINarrationData.audio.duration).reduce((total,num) => total + num), 0)
 
 			this.insertPlayer()
 			this.saveSelectors()
