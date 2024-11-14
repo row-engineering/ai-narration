@@ -94,6 +94,11 @@ class AI_Narration_Public {
 	}
 
 	private function get_post_info( $post = false ) {
+
+		if ( ! is_singular('post') ) {
+			return;
+		}
+
 		$this->post         = $post;
 		$this->post_id      = false;
 		$this->post_title   = '';
@@ -353,6 +358,7 @@ class AI_Narration_Public {
 		$block_groups_index = 0;
 		$current_group = '';
 
+		$min_length =  600;
 		$max_length = 2000;
 		$wc = 0;
 
@@ -382,7 +388,10 @@ class AI_Narration_Public {
 							$block_len = strlen($block_content);
 							$wc += $block_len;
 
-							if (strlen($current_group) + $block_len > $max_length) {
+							/* The first MP3 file should be shorter and therfore a smaller filesize */
+							$len = ($block_groups_index === 0) ? $min_length : $max_length;
+
+							if (strlen($current_group) + $block_len > $len) {
 								$block_groups_index++;
 								$current_group = '';
 							}
@@ -393,7 +402,9 @@ class AI_Narration_Public {
 					}
 					break;
 				case 'core/separator':
-					$block_groups[$block_groups_index][] = '...';
+					if ($block_groups_index > 0) {
+						$block_groups[$block_groups_index][] = '...';
+					}
 					break;
 			}
 		}
@@ -491,6 +502,11 @@ class AI_Narration_Public {
 	 * }
 	 */
 	public function output_audio_schema($schema) {
+
+		if ( ! is_singular('post') ) {
+			return;
+		}
+
 		global $post;
 
 		$date = DateTime::createFromFormat('Y-m-d H:i:s', $post->post_date);
@@ -503,20 +519,27 @@ class AI_Narration_Public {
 			$article_schema_idx = $this->find_newsarticle_schema($schema['@graph']);
 
 			if ($article_schema_idx > -1) {
-				if ( !$schema['@graph'][$article_schema_idx]['associatedMedia'] ) {
+				if ( !isset($schema['@graph'][$article_schema_idx]['associatedMedia']) ) {
 					$schema['@graph'][$article_schema_idx]['associatedMedia'] = array();
 				}
 	
 				$index_data = json_decode(file_get_contents($index_file), true);
 				$tracks = $index_data['audio']['tracks'];
+
 				foreach ( $tracks as $idx => $track ) {
 					$track_num = $idx + 1;
+
+					$duration = 0;
+					if (isset($index_data['audio']['duration'])){
+						$duration = $this->get_iso8601_duration($index_data['audio']['duration'][$idx]);
+					}
+
 					$schema['@graph'][$article_schema_idx]['associatedMedia'][] = array(
 						'@type'          => 'AudioObject',
 						'contentUrl'     => $index_data['url'],
 						'encodingFormat' => 'audio/mpeg',
 						'position'       => $track_num,
-						'duration'       => $this->get_iso8601_duration($index_data['audio']['duration'][$idx]),
+						'duration'       => $duration,
 						'name'           => $schema['@graph'][$article_schema_idx]['headline'],
 						'description'    => $schema['@graph'][$article_schema_idx]['description'],
 						'dateUploaded'   => $schema['@graph'][$article_schema_idx]['dateModified'],
