@@ -303,7 +303,7 @@
 		trackProgress() {
 			if (this.nextMilestoneIdx < 100) {
 				const milestone = this.audioMilestones[this.nextMilestoneIdx]
-				if (this.audio.currentTime > milestone.timestamp) {
+				if (this.totalPlay > milestone.timestamp) {
 					const percentage_listened = milestone.percentage
 					if (milestone.percentage < 90) {
 						this.eventLog( 'audio_progress', { percentage_listened } )
@@ -448,9 +448,10 @@
 		// TO DO: move into core site repo
 		eventLog( eventName, addtlParams = {} ) {
 			const params = Object.assign({
-				audio_duration: Math.floor(this.audioLength),
 				audio_title: AINarrationData.title,
-				audio_url: location.href
+				audio_duration: Math.floor(this.audioLength),
+				audio_url: this.audio.src,
+				type: 'ai-generated',
 			}, addtlParams)
 			gtag('event', eventName, params)
 		},
