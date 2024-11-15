@@ -205,11 +205,6 @@ class AI_Narration {
 		$this->loader->run();
 	}
 
-	public function test() {
-		return 'Test';
-	}
-
-
 	/**
 	 * The name of the plugin used to uniquely identify it within the context of
 	 * WordPress and to define internationalization functionality.

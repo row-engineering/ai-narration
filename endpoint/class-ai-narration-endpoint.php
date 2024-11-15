@@ -136,6 +136,18 @@ class AI_Narration_Endpoint {
 		sort($index_data['audio']['tracks']);
 
 		//	Update: durations
+
+		/*
+			TODO: Anna - what about using this instead? It loads the 'getID3' librray as needed.
+			https://developer.wordpress.org/reference/functions/wp_read_audio_metadata/
+
+			$metadata = wp_read_audio_metadata( $file_path );
+			if ( isset( $metadata['length_formatted'] ) ) {
+				return $metadata['length_formatted']; // 'HH:MM:SS'
+			} elseif ( isset( $metadata['length'] ) ) {
+				return gmdate( "H:i:s", $metadata['length'] ); // Raw duration in seconds
+			}
+		*/
 		$getID3    = new getID3();
 		$file_info = $getID3->analyze(AI_NARRATION_PATH . $audio_path);
 		$duration  = $file_info['playtime_seconds'];
