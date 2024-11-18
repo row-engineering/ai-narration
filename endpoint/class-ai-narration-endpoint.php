@@ -137,6 +137,7 @@ class AI_Narration_Endpoint {
 		//	Update: durations
 		$metadata = wp_read_audio_metadata( AI_NARRATION_PATH . $audio_path );
 		$index_data['audio']['duration'][$audio_index - 1] = $metadata['length'];
+		ksort($index_data['audio']['tracks']);
 
 		//	Save
 		$result = file_put_contents($index_file, json_encode($index_data, JSON_PRETTY_PRINT));

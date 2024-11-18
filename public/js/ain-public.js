@@ -11,6 +11,7 @@
 			document.body.classList.add('has-ai-narration')
 
 			this.files        = AINarrationData.audio.tracks
+			this.durations    = AINarrationData.audio.duration
 			this.loadIdx      = 0      // which audio file are we loading?
 			this.playIdx      = 0      // which audio file are we playing?
 			this.bufferedTime = [0]    // tracking buffered time for all files
@@ -121,12 +122,7 @@
 		},
 
 		getTotalAudioLength() {
-			// depending on the order in which audio files are returned from the API, 
-			// sometimes duration is an array ([33, 120, 110]) if the audio files were returned sequentially,
-			// or an object ({0: 33, 2: 110, 1: 120}) if the audio files were returned out-of-order.
-			// luckily, Object.values works in either case
-			const durationLengths = Object.values(AINarrationData.audio.duration)
-			return durationLengths.reduce((total,num) => total + num, 0)
+			return this.durations.reduce((total,num) => total + num, 0)
 		},
 
 		setAudioMilestones() {
@@ -188,6 +184,7 @@
 			this.onPlay()
 		},
 
+		// TO DO: wait to load the next clip until the current one is nearly done playing
 		initSequentialLoading() {
 			if (this.audio.readyState === 4) {
 				this.preloadNextClip()
@@ -201,7 +198,10 @@
 			if (this.loadIdx < this.files.length - 1) {
 				this.loadIdx++
 				const preloading = new Audio()
-				preloading.addEventListener('canplaythrough', () => this.preloadNextClip())
+				preloading.addEventListener('canplaythrough', () => {
+					this.displayBuffered(preloading, this.loadIdx)
+					this.preloadNextClip()
+				})
 				preloading.src = this.files[this.loadIdx]
 			}
 		},
@@ -297,11 +297,32 @@
 		},
 
 		onSliderInput(e) {
-			this.audio.currentTime = e.currentTarget.value
-			this.updateDisplay()
-			if (this.audio.currentTime === Math.floor(this.audioLength)) {
+			const seekTime = e.currentTarget.value
+
+			if (seekTime === Math.floor(this.audioLength)) {
 				this.reset()
+				return
 			}
+
+			let time = 0
+			this.durations.forEach((length, idx) => {
+				if (time + length < seekTime) {
+					time += length
+				} else {
+					const audioTime = seekTime - time
+					// if switching to a different audio file
+					if (idx !== this.playIdx) {
+						this.playedTime = this.files.map((t, idx2) => {
+							return idx2 < idx ? this.durations[idx2] : (idx2 > idx ? 0 : audioTime)
+						})
+						this.playIdx = idx
+						this.audio.src = this.files[idx]
+					}
+					this.audio.currentTime = audioTime
+					this.audio.play()
+				}
+			})
+			this.updateDisplay()
 		},
 
 		whilePlaying() {
@@ -330,15 +351,18 @@
 			this.active = false
 			this.player.dataset.active = 'false'
 
+			this.playIdx = 0
+			this.audio.src = this.files[0]
 			this.audio.currentTime = 0
 			this.seek.value = 0
+
 			this.updateDisplay()
 			this.onPause()
 			this.removeScrollObserver()
 		},
 
 		updateDisplay() {
-			this.playedTime[this.playIdx] = this.audio.currentTime
+			this.playedTime[this.playIdx] = Math.round(this.audio.currentTime)
 			this.totalPlay = Math.floor(this.playedTime.reduce((total,num) => total + num), 0)
 
 			this.displayTime()
@@ -355,14 +379,14 @@
 			this.player.style.setProperty('--played', `${percent}%`)
 		},
 
-		displayBuffered() {
-			if (this.audio.buffered.length === 0) {
+		displayBuffered(src = this.audio, idx = this.playIdx) {
+			if (src.buffered.length === 0) {
 				return
 			}
 
-			const fileBufferedTime = Math.floor(this.audio.buffered.end(this.audio.buffered.length - 1))
-			this.bufferedTime[this.playIdx] = fileBufferedTime
-			const totalBufferedTime = Math.floor(this.bufferedTime.reduce((total,num) => total + num), 0)
+			const fileBufferedTime = Math.round(src.buffered.end(src.buffered.length - 1))
+			this.bufferedTime[idx] = fileBufferedTime
+			const totalBufferedTime = Math.round(this.bufferedTime.reduce((total,num) => total + num), 0)
 			this.player.style.setProperty('--buffered', `${totalBufferedTime / this.audioLength * 100}%`)
 		},
 
@@ -433,7 +457,7 @@
 			}
 			this.observer = new IntersectionObserver((entries) => showDownpage(entries), { threshold: .001, rootMargin: '0px 0px' })
 			this.observer.observe(this.container)
-			
+
 			// const footer = document.querySelector(AINarrationData.config.footerSelector)
 			// if (footer) {
 			// 	const hideAtFooter = entries => {
