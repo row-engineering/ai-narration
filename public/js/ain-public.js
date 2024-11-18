@@ -16,7 +16,7 @@
 			this.bufferedTime = [0]    // tracking buffered time for all files
 			this.playedTime   = [0]    // tracking played time for all files
 			this.totalPlay    = 0      // tracking played time for all files
-			this.audioLength  = Math.floor(Object.values(AINarrationData.audio.duration).reduce((total,num) => total + num), 0)
+			this.audioLength  = this.getTotalAudioLength()
 
 			this.insertPlayer()
 			this.saveSelectors()
@@ -120,6 +120,15 @@
 			this.container.style.minHeight = `${this.container.clientHeight}px`
 		},
 
+		getTotalAudioLength() {
+			// depending on the order in which audio files are returned from the API, 
+			// sometimes duration is an array ([33, 120, 110]) if the audio files were returned sequentially,
+			// or an object ({0: 33, 2: 110, 1: 120}) if the audio files were returned out-of-order.
+			// luckily, Object.values works in either case
+			const durationLengths = Object.values(AINarrationData.audio.duration)
+			return durationLengths.reduce((total,num) => total + num, 0)
+		},
+
 		setAudioMilestones() {
 			this.audioMilestones = [
 				{
@@ -201,6 +210,7 @@
 			if (this.playIdx < this.files.length - 1) {
 				this.playIdx++
 				this.audio.src = this.files[this.playIdx]
+				this.audio.playbackRate = this.playRate
 				this.audio.play()
 			}
 		},
