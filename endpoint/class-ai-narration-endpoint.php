@@ -1,8 +1,7 @@
 <?php
 
-// getID3 library is built-in with WordPress
-if (!class_exists('getID3')) {
-	require_once(ABSPATH . 'wp-includes/ID3/getid3.php');
+if (!function_exists('wp_read_audio_metadata')) {
+	require_once(ABSPATH . 'wp-admin/includes/media.php');
 }
 
 if ( ! defined( 'WPINC' ) ) {
@@ -136,22 +135,8 @@ class AI_Narration_Endpoint {
 		sort($index_data['audio']['tracks']);
 
 		//	Update: durations
-
-		/*
-			TODO: Anna - what about using this instead? It loads the 'getID3' librray as needed.
-			https://developer.wordpress.org/reference/functions/wp_read_audio_metadata/
-
-			$metadata = wp_read_audio_metadata( $file_path );
-			if ( isset( $metadata['length_formatted'] ) ) {
-				return $metadata['length_formatted']; // 'HH:MM:SS'
-			} elseif ( isset( $metadata['length'] ) ) {
-				return gmdate( "H:i:s", $metadata['length'] ); // Raw duration in seconds
-			}
-		*/
-		$getID3    = new getID3();
-		$file_info = $getID3->analyze(AI_NARRATION_PATH . $audio_path);
-		$duration  = $file_info['playtime_seconds'];
-		$index_data['audio']['duration'][$audio_index - 1] = $duration;
+		$metadata = wp_read_audio_metadata( AI_NARRATION_PATH . $audio_path );
+		$index_data['audio']['duration'][$audio_index - 1] = $metadata['length'];
 
 		//	Save
 		$result = file_put_contents($index_file, json_encode($index_data, JSON_PRETTY_PRINT));
