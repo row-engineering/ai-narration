@@ -1,45 +1,48 @@
 (function() {
-	const AINarration = {
+	class AINPlayer {
 		/**************
 		 * INITIALIZE *
 		 **************/
-		init() {
-			if (!window.AINarrationData) {
-				return
-			}
-
-			document.body.classList.add('has-ai-narration')
-
-			this.files        = AINarrationData.audio.tracks
-			this.durations    = AINarrationData.audio.duration
-			this.loadIdx      = 0      // which audio file are we loading?
-			this.playIdx      = 0      // which audio file are we playing?
-			this.bufferedTime = [0]    // tracking buffered time for all files
-			this.playedTime   = [0]    // tracking played time for all files
-			this.totalPlay    = 0      // tracking played time for all files
-			this.audioLength  = this.getTotalAudioLength()
+		constructor(ainData) {
+			this.data          = ainData
+			this.files         = this.data.audio.tracks
+			this.durations     = this.data.audio.duration
+			this.loadIdx       = 0      // which audio file are we loading?
+			this.playIdx       = 0      // which audio file are we playing?
+			this.bufferedTime  = [0]    // tracking buffered time for all files
+			this.playedTime    = [0]    // tracking played time for all files
+			this.totalPlay     = 0      // combining played time for all files
+			this.totalDuration = this.durations.reduce((total,num) => total + num, 0)
 
 			this.insertPlayer()
 			this.saveSelectors()
-			this.setInitialState()
+
+			this.active 	= false
+			this.playing 	= false
+			this.muted 		= false
+			this.playRate	= 1
+			this.volume		= 100
+			this.seek.max = Math.floor(this.totalDuration)
+
 			this.setContainerHeight()
+			this.initSequentialLoading()
 			this.addPlaybackEventListeners()
 			this.mediaSessionSetup()
 			this.setAudioMilestones()
-		},
+		}
 
 		insertPlayer() {
 			const firstGraf = document.querySelector('.post-content > p:first-child')
 			if (firstGraf) {
 				firstGraf.insertAdjacentHTML('afterend', this.playerMarkup(true))
 			}
-		},
+		}
 
 		playerMarkup() {
-			learnMoreLink = ''
-			if (AINarrationData.config.learnMoreLink) {
+			let learnMoreLink = ''
+			if (this.data.config.learnMoreLink) {
 				learnMoreLink = `
-					<a class="ain-player__about" href="${AINarrationData.config.learnMoreLink}" target="_blank">Learn more</a>
+					<a class="ain-player__about" href="${this.data.config.learnMoreLink}" target="_blank">Learn more</a>
 				`
 			}
 			return `
@@ -81,7 +84,7 @@
 								</div>
 								<input class="ain-player__seek" type="range" max="100" value="0" aria-label="seek">
 								<div class="ain-player__time meta">
-									<span class="ain-player__time-played">0:00</span><span class="ain-player__time-slash">/</span><span class="ain-player__time-duration">${this.calculateTime(this.audioLength)}</span>
+									<span class="ain-player__time-played">0:00</span><span class="ain-player__time-slash">/</span><span class="ain-player__time-duration">${this.calculateTime(this.totalDuration)}</span>
 								</div>
 								<button class="ain-player__speed meta" aria-label="toggle playback speed"><span>1x</span></button>
 							</div>
@@ -89,7 +92,7 @@
 					</div>
 				</div>
 			`
-		},
+		}
 
 		saveSelectors() {
 			this.container 	= document.querySelector('.ain__container')
@@ -105,51 +108,44 @@
 			this.volumeBtn	= document.querySelector('.ain-player__volume__button')
 			this.seek 			= document.querySelector('.ain-player__seek')
 			this.played 		= document.querySelector('.ain-player__time-played')
-		},
-
-		setInitialState() {
-			this.active 	= false
-			this.playing 	= false
-			this.muted 		= false
-			this.playRate	= 1
-			this.volume		= 100
-			this.seek.max = Math.floor(this.audioLength)
-		},
+		}
 
 		setContainerHeight() {
 			// so that the space is held when the player jumps down to fixed position on scroll
 			this.container.style.minHeight = `${this.container.clientHeight}px`
-		},
+		}
 
-		getTotalAudioLength() {
-			return this.durations.reduce((total,num) => total + num, 0)
-		},
+		initSequentialLoading() {
+			// TO DO: wait to load the next clip until the current one is nearly done playing
+			this.audio.addEventListener('progress', () => this.displayBuffered())
+			this.audio.addEventListener('canplaythrough', () => {
+				this.displayBuffered()
+				this.preloadNextClip()
+			})
+			this.audio.addEventListener('ended', () => this.playNextClip())
+		}
 
-		setAudioMilestones() {
-			this.audioMilestones = [
-				{
-					timestamp: Math.floor(this.audioLength * .05),
-					percentage: 5
-				},
-				{
-					timestamp: Math.floor(this.audioLength * .25),
-					percentage: 25
-				},
-				{
-					timestamp: Math.floor(this.audioLength * .5),
-					percentage: 50
-				},
-				{
-					timestamp: Math.floor(this.audioLength * .7),
-					percentage: 70
-				},
-				{
-					timestamp: Math.floor(this.audioLength * .9),
-					percentage: 90
-				},
-			]
-			this.nextMilestoneIdx = 0
-		},
+		preloadNextClip() {
+			if (this.loadIdx < this.files.length - 1) {
+				this.loadIdx++
+				const preloading = new Audio()
+				preloading.addEventListener('progress', () => this.displayBuffered(preloading, this.loadIdx))
+				preloading.addEventListener('canplaythrough', () => {
+					this.displayBuffered(preloading, this.loadIdx)
+					this.preloadNextClip()
+				})
+				preloading.src = this.files[this.loadIdx]
+			}
+		}
+
+		playNextClip() {
+			if (this.playIdx < this.files.length - 1) {
+				this.playIdx++
+				this.audio.src = this.files[this.playIdx]
+				this.audio.playbackRate = this.playRate
+				this.audio.play()
+			}
+		}
 
 		/************
 		 * PLAYBACK *
@@ -157,7 +153,6 @@
 
 		addPlaybackEventListeners() {
 			this.cta.addEventListener('click', () => this.initialize())
-			this.audio.addEventListener('progress', () => this.displayBuffered())
 			this.play.addEventListener('click', () => this.playing ? this.onPause() : this.onPlay())
 			this.rewind.addEventListener('click', () => this.skipBack())
 			this.forward.addEventListener('click', () => this.skipForward())
@@ -173,47 +168,14 @@
 					this.volumeBtn.parentElement.classList.toggle('active')
 				}
 			})
-		},
+		}
 
 		initialize() {
 			this.active = true
 			this.player.dataset.active = 'true'
-			this.initSequentialLoading()
-			this.displayBuffered()
 			this.scrollObserver()
 			this.onPlay()
-		},
-
-		// TO DO: wait to load the next clip until the current one is nearly done playing
-		initSequentialLoading() {
-			if (this.audio.readyState === 4) {
-				this.preloadNextClip()
-			} else {
-				this.audio.addEventListener('canplaythrough', () => this.preloadNextClip())
-			}
-			this.audio.addEventListener('ended', () => this.playNextClip())
-		},
-
-		preloadNextClip() {
-			if (this.loadIdx < this.files.length - 1) {
-				this.loadIdx++
-				const preloading = new Audio()
-				preloading.addEventListener('canplaythrough', () => {
-					this.displayBuffered(preloading, this.loadIdx)
-					this.preloadNextClip()
-				})
-				preloading.src = this.files[this.loadIdx]
-			}
-		},
-
-		playNextClip() {
-			if (this.playIdx < this.files.length - 1) {
-				this.playIdx++
-				this.audio.src = this.files[this.playIdx]
-				this.audio.playbackRate = this.playRate
-				this.audio.play()
-			}
-		},
+		}
 
 		onPlay() {
 			this.audio.play()
@@ -226,31 +188,31 @@
 			} else {
 				this.audio.addEventListener('loadedmetadata', () => this.eventLog( 'audio_play' ))
 			}
-		},
+		}
 
 		onPause() {
 			this.audio.pause()
 			cancelAnimationFrame(this.raf)
 			this.playing = false
 			this.player.dataset.play = 'pause'
-		},
+		}
 
 		skipBack(offset = 15) {
 			this.audio.currentTime -= offset
 			if (!this.playing) {
 				this.updateDisplay()
 			}
-		},
+		}
 
 		skipForward(offset = 15) {
 			this.audio.currentTime += offset
-			if (this.audio.currentTime === this.audioLength) {
+			if (this.audio.currentTime === this.totalDuration) {
 				this.reset()
 			}
 			if (!this.playing) {
 				this.updateDisplay()
 			}
-		},
+		}
 
 		togglePlaybackRate() {
 			const playRates = [.75, 1, 1.25, 1.5, 1.75, 2]
@@ -260,7 +222,7 @@
 			this.playRate = playRates[nextIdx]
 			this.audio.playbackRate = this.playRate
 			this.speedBtn.innerHTML = `<span>${this.playRate}x</span>`
-		},
+		}
 
 		adjustVolume(e) {
 			this.volume = parseInt(e.target.value)
@@ -272,7 +234,7 @@
 			} else if (this.muted) {
 				this.unmute()
 			}
-		},
+		}
 
 		toggleMute() {
 			if (this.muted === false) {
@@ -282,24 +244,24 @@
 				this.unmute()
 				this.player.style.setProperty('--volume', `${this.volume}%`)
 			}
-		},
+		}
 
 		mute() {
 			this.audio.muted = true
 			this.muted = true
 			this.player.dataset.volume = 'off'
-		},
+		}
 
 		unmute() {
 			this.audio.muted = false
 			this.muted = false
 			this.player.dataset.volume = 'on'
-		},
+		}
 
 		onSliderInput(e) {
 			const seekTime = e.currentTarget.value
 
-			if (seekTime === Math.floor(this.audioLength)) {
+			if (seekTime === Math.floor(this.totalDuration)) {
 				this.reset()
 				return
 			}
@@ -323,13 +285,13 @@
 				}
 			})
 			this.updateDisplay()
-		},
+		}
 
 		whilePlaying() {
 			this.updateDisplay()
 			this.trackProgress()
 			this.raf = requestAnimationFrame(() => this.whilePlaying())
-		},
+		}
 
 		trackProgress() {
 			if (this.nextMilestoneIdx < 100) {
@@ -345,7 +307,7 @@
 					}
 				}
 			}
-		},
+		}
 
 		reset() {
 			this.active = false
@@ -359,7 +321,7 @@
 			this.updateDisplay()
 			this.onPause()
 			this.removeScrollObserver()
-		},
+		}
 
 		updateDisplay() {
 			this.playedTime[this.playIdx] = Math.round(this.audio.currentTime)
@@ -367,17 +329,17 @@
 
 			this.displayTime()
 			this.displayProgress()
-		},
+		}
 
 		displayTime() {
 			this.played.textContent = this.calculateTime(this.totalPlay)
-		},
+		}
 
 		displayProgress() {
 			this.seek.value = this.totalPlay
-			const percent = this.totalPlay / this.audioLength * 100
+			const percent = this.totalPlay / this.totalDuration * 100
 			this.player.style.setProperty('--played', `${percent}%`)
-		},
+		}
 
 		displayBuffered(src = this.audio, idx = this.playIdx) {
 			if (src.buffered.length === 0) {
@@ -387,8 +349,8 @@
 			const fileBufferedTime = Math.round(src.buffered.end(src.buffered.length - 1))
 			this.bufferedTime[idx] = fileBufferedTime
 			const totalBufferedTime = Math.round(this.bufferedTime.reduce((total,num) => total + num), 0)
-			this.player.style.setProperty('--buffered', `${totalBufferedTime / this.audioLength * 100}%`)
-		},
+			this.player.style.setProperty('--buffered', `${totalBufferedTime / this.totalDuration * 100}%`)
+		}
 
 		calculateTime(secs) {
 			const minutes = Math.floor(secs / 60)
@@ -396,10 +358,10 @@
 			const returnedSeconds = seconds < 10 ? `0${seconds}` : `${seconds}`
 
 			return `${minutes}:${returnedSeconds}`
-		},
+		}
 
 		calculateMinutes() {
-			let minutes = Math.floor(this.audioLength / 60)
+			let minutes = Math.floor(this.totalDuration / 60)
 			const hours = Math.floor(minutes / 60)
 
 			let text
@@ -411,14 +373,14 @@
 			}
 
 			return text
-		},
+		}
 
 		mediaSessionSetup() {
 			if ('mediaSession' in navigator) {
 				// metadata
 				navigator.mediaSession.metadata = new MediaMetadata({
-					title: AINarrationData.title,
-					artist: AINarrationData.authors.join(', ')
+					title: this.data.title,
+					artist: this.data.authors.join(', ')
 				})
 
 				// event listeners
@@ -435,7 +397,7 @@
 					}
 				})
 			}
-		},
+		}
 
 		/*******
 		 * ETC *
@@ -458,7 +420,7 @@
 			this.observer = new IntersectionObserver((entries) => showDownpage(entries), { threshold: .001, rootMargin: '0px 0px' })
 			this.observer.observe(this.container)
 
-			// const footer = document.querySelector(AINarrationData.config.footerSelector)
+			// const footer = document.querySelector(this.data.config.footerSelector)
 			// if (footer) {
 			// 	const hideAtFooter = entries => {
 			// 		entries.forEach((entry) => {
@@ -473,25 +435,65 @@
 			// 	this.observer = new IntersectionObserver((entries) => hideAtFooter(entries), { threshold: .01, rootMargin: '0px 0px' })
 			// 	this.observer.observe(footer)
 			// }
-		},
+		}
 
 		removeScrollObserver() {
 			this.observer.unobserve(this.container)
-		},
+		}
+
+		/*************
+		 * ANALYTICS *
+		 *************/
 
 		// TO DO: move into core site repo
 		eventLog( eventName, addtlParams = {} ) {
 			const params = Object.assign({
-				audio_title: AINarrationData.title,
-				audio_duration: Math.floor(this.audioLength),
+				audio_title: this.data.title,
+				audio_duration: Math.floor(this.totalDuration),
 				audio_url: this.audio.src,
 				type: 'ai-generated',
 			}, addtlParams)
 			gtag('event', eventName, params)
-		},
+		}
+
+		setAudioMilestones() {
+			this.audioMilestones = [
+				{
+					timestamp: Math.floor(this.totalDuration * .05),
+					percentage: 5
+				},
+				{
+					timestamp: Math.floor(this.totalDuration * .25),
+					percentage: 25
+				},
+				{
+					timestamp: Math.floor(this.totalDuration * .5),
+					percentage: 50
+				},
+				{
+					timestamp: Math.floor(this.totalDuration * .7),
+					percentage: 70
+				},
+				{
+					timestamp: Math.floor(this.totalDuration * .9),
+					percentage: 90
+				},
+			]
+			this.nextMilestoneIdx = 0
+		}
+	}
+
+	const AINarration = {
+		init() {
+
+		}
 	}
 
 	window.addEventListener('DOMContentLoaded', function() {
-		AINarration.init()
+		if (window.AINarrationData) {
+			window.ainPlayers = []
+			ainPlayers.push(new AINPlayer(AINarrationData))
+			document.body.classList.add('has-ai-narration')
+		}
 	})
 }())
