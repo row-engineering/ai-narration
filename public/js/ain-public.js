@@ -158,7 +158,7 @@
 			this.forward.addEventListener('click', () => this.skipForward())
 			this.speedBtn.addEventListener('click', () => this.togglePlaybackRate())
 			this.volumeRng.addEventListener('input', (e) => this.adjustVolume(e))
-			this.seek.addEventListener('input', (e) => this.onSliderInput(e))
+			this.seek.addEventListener('input', (e) => this.onSliderInput(e.currentTarget.value))
 
 			this.volumeBtn.addEventListener('click', () => {
 				// on mobile, you need click to open the volume slider, so we don't want it to toggle mute, too
@@ -198,20 +198,11 @@
 		}
 
 		skipBack(offset = 15) {
-			this.audio.currentTime -= offset
-			if (!this.playing) {
-				this.updateDisplay()
-			}
+			this.onSliderInput(this.totalPlay - offset)
 		}
 
 		skipForward(offset = 15) {
-			this.audio.currentTime += offset
-			if (this.audio.currentTime === this.totalDuration) {
-				this.reset()
-			}
-			if (!this.playing) {
-				this.updateDisplay()
-			}
+			this.onSliderInput(this.totalPlay + offset)
 		}
 
 		togglePlaybackRate() {
@@ -258,9 +249,7 @@
 			this.player.dataset.volume = 'on'
 		}
 
-		onSliderInput(e) {
-			const seekTime = e.currentTarget.value
-
+		onSliderInput(seekTime) {
 			if (seekTime === Math.floor(this.totalDuration)) {
 				this.reset()
 				return
