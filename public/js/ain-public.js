@@ -145,6 +145,8 @@
 				this.audio.src = this.files[this.playIdx]
 				this.audio.playbackRate = this.playRate
 				this.audio.play()
+			} else {
+				this.reset()
 			}
 		}
 
@@ -180,6 +182,7 @@
 		}
 
 		onPlay() {
+			window.dispatchEvent(new CustomEvent('ain_play', { detail: { player: this } } ))
 			this.audio.play()
 			requestAnimationFrame(() => this.whilePlaying())
 			this.playing = true
@@ -272,7 +275,9 @@
 						this.audio.src = this.files[idx]
 					}
 					this.audio.currentTime = audioTime
-					this.audio.play()
+					if (!this.audio.paused) {
+						this.audio.play()
+					}
 				}
 			})
 			this.updateDisplay()
@@ -331,11 +336,16 @@
 
 		reset() {
 			this.setInactive()
+			this.fadeout()
 
 			this.playIdx = 0
 			this.audio.src = this.files[0]
 			this.audio.currentTime = 0
+			this.audio.playbackRate = this.playRate
+			this.playedTime = [0]
+			this.totalPlay = 0
 			this.seek.value = 0
+			this.player.dataset.active = 'false'
 
 			this.updateDisplay()
 			this.removeScrollObserver()
@@ -399,41 +409,38 @@
 		 *******/
 
 		scrollObserver() {
-			const showDownpage = entries => {
-				entries.forEach((entry) => {
-					if (entry.intersectionRatio === 0) {
-						this.element.classList.remove('ain--original')
-						this.element.classList.add('ain--downpage')
-					} else {
-						this.element.classList.add('ain--original')
-						setTimeout(() => {
-							this.element.classList.remove('ain--downpage')
-						}, 500)
-					}
-				})
+			const watchPosition = entries => {
+				if (this.active) {
+					entries.forEach(entry => {
+						entry.intersectionRatio === 0 ? this.showDownpage() : this.showInline()
+					})
+				}
 			}
-			this.observer = new IntersectionObserver((entries) => showDownpage(entries), { threshold: .001, rootMargin: '0px 0px' })
+			this.observer = new IntersectionObserver(entries => watchPosition(entries), { threshold: .001, rootMargin: '0px 0px' })
 			this.observer.observe(this.container)
-
-			// const footer = document.querySelector(this.data.config.footerSelector)
-			// if (footer) {
-			// 	const hideAtFooter = entries => {
-			// 		entries.forEach((entry) => {
-			// 			if (entry.intersectionRatio > 0) {
-			// 				this.element.classList.add('ain--fadeout')
-			// 				window.setTimeout(() => this.onPause(), 150)
-			// 			} else {
-			// 				this.element.classList.remove('ain--fadeout')
-			// 			}
-			// 		})
-			// 	}
-			// 	this.observer = new IntersectionObserver((entries) => hideAtFooter(entries), { threshold: .01, rootMargin: '0px 0px' })
-			// 	this.observer.observe(footer)
-			// }
 		}
 
 		removeScrollObserver() {
 			this.observer.unobserve(this.container)
+		}
+
+		showDownpage() {
+			this.element.classList.remove('ain--original')
+			this.element.classList.add('ain--downpage')
+		}
+
+		showInline() {
+			this.element.classList.add('ain--original')
+			setTimeout(() => {
+				this.element.classList.remove('ain--downpage')
+			}, 500)
+		}
+
+		fadeout() {
+			this.element.classList.add('ain--fadeout')
+			setTimeout(() => {
+				this.element.classList.remove('ain--fadeout')
+			}, 500)
 		}
 
 		/*************
@@ -490,6 +497,8 @@
 			}
 
 			window.addEventListener('narration_check', (e) => { this.checkForNarration(e.detail) })
+			
+			window.addEventListener('ain_play', (e) => { this.pauseOtherPlayers(e.detail) })
 		},
 
 		checkForNarration(articleData) {
@@ -501,7 +510,7 @@
 				return
 			}
 
-			fetch(`/wp-content/narrations/${year}/${slug}/index.json?100`)
+			fetch(`/wp-content/narrations/${year}/${slug}/index.json`)
 				.then(response => {
 					if (response.ok) {
 						return response.text()
@@ -521,6 +530,16 @@
 		insertPlayer(data, articleEl) {
 			document.body.classList.add('has-ai-narration')
 			this.players.push(new AINPlayer(data, articleEl))
+		},
+
+		pauseOtherPlayers(data) {
+			if (data && data.player) {
+				this.players.forEach(player => {
+					if (player.active && player !== data.player) {
+						player.setInactive()
+					}
+				})
+			}
 		}
 	}
 
