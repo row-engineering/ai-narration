@@ -94,11 +94,6 @@ class AI_Narration_Public {
 	}
 
 	private function get_post_info( $post = false ) {
-
-		if ( ! is_singular('post') ) {
-			return;
-		}
-
 		$this->post         = $post;
 		$this->post_id      = false;
 		$this->post_title   = '';
@@ -310,6 +305,10 @@ class AI_Narration_Public {
 		if ($new_status === 'publish' && $old_status !== 'publish') {
 			$this->get_post_info( $post );
 
+			if (!$this->post) {
+				return;
+			}
+
 			$eligible_post = $this->is_post_eligible();
 			if ( $eligible_post ) {
 				$text_groups = $this->get_text_block_groups();
@@ -416,7 +415,6 @@ class AI_Narration_Public {
 			$block_groups = array();
 		}
 
-		// error_log('get_text_block_groups: ' . count($block_groups));
 		return $block_groups;
 	}
 
@@ -477,9 +475,6 @@ class AI_Narration_Public {
 				$narration_json = file_get_contents($index_file);
 				$narration_data = json_decode($narration_json, true);
 				if ( $narration_data['audio']['total'] === count($narration_data['audio']['tracks']) ) {
-					$narration_data['config'] = array();
-					$narration_data['config']['learnMoreLink'] = get_option('learn_more_link');
-					$narration_json = json_encode($narration_data);
 					echo "<script id='ai-narration-data'>window.AINarrationData = $narration_json</script>";
 				}
 			}
@@ -503,9 +498,7 @@ class AI_Narration_Public {
 	 */
 	public function output_audio_schema($schema) {
 
-		if ( ! is_singular('post') ) {
-			return;
-		}
+		if ( !is_single() ) return;
 
 		global $post;
 
@@ -522,7 +515,7 @@ class AI_Narration_Public {
 				if ( !isset($schema['@graph'][$article_schema_idx]['associatedMedia']) ) {
 					$schema['@graph'][$article_schema_idx]['associatedMedia'] = array();
 				}
-	
+
 				$index_data = json_decode(file_get_contents($index_file), true);
 				$tracks = $index_data['audio']['tracks'];
 

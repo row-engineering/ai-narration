@@ -3,7 +3,8 @@
 		/**************
 		 * INITIALIZE *
 		 **************/
-		constructor(ainData) {
+		constructor(ainData, articleEl) {
+			this.articleEl     = articleEl
 			this.data          = ainData
 			this.files         = this.data.audio.tracks
 			this.durations     = this.data.audio.duration
@@ -32,7 +33,7 @@
 		}
 
 		insertPlayer() {
-			const firstGraf = document.querySelector('.post-content > p:first-child')
+			const firstGraf = this.articleEl.querySelector('.post-content > p:first-child')
 			if (firstGraf) {
 				firstGraf.insertAdjacentHTML('afterend', this.playerMarkup(true))
 			}
@@ -49,7 +50,7 @@
 				<div class="ain__container">
 					<div class="ain">
 						<div class="ain-player" data-play="pause" data-volume="on" data-active="false">
-							<audio id="ain-track" src="${this.files[0]}" preload="metadata"></audio>
+							<audio class="ain-track" src="${this.files[0]}" preload="metadata"></audio>
 							<div class="ain-player__intro">
 								<button class="ain-player__cta">
 									<div class="ain-player__cta__icon ain-player__icon ain-player__icon--large">
@@ -95,19 +96,19 @@
 		}
 
 		saveSelectors() {
-			this.container 	= document.querySelector('.ain__container')
-			this.element		= document.querySelector('.ain')
-			this.cta 				= document.querySelector('.ain-player__cta')
-			this.audio 			= document.getElementById('ain-track')
-			this.player 		= document.querySelector('.ain-player')
-			this.play 			= document.querySelector('.ain-player__play')
-			this.rewind 		= document.querySelector('.ain-player__skip--bwd')
-			this.forward 		= document.querySelector('.ain-player__skip--fwd')
-			this.speedBtn		= document.querySelector('.ain-player__speed')
-			this.volumeRng	= document.querySelector('.ain-player__volume__range-input')
-			this.volumeBtn	= document.querySelector('.ain-player__volume__button')
-			this.seek 			= document.querySelector('.ain-player__seek')
-			this.played 		= document.querySelector('.ain-player__time-played')
+			this.container = this.articleEl.querySelector('.ain__container')
+			this.element   = this.articleEl.querySelector('.ain')
+			this.cta       = this.articleEl.querySelector('.ain-player__cta')
+			this.audio     = this.articleEl.querySelector('.ain-track')
+			this.player    = this.articleEl.querySelector('.ain-player')
+			this.play      = this.articleEl.querySelector('.ain-player__play')
+			this.rewind    = this.articleEl.querySelector('.ain-player__skip--bwd')
+			this.forward   = this.articleEl.querySelector('.ain-player__skip--fwd')
+			this.speedBtn  = this.articleEl.querySelector('.ain-player__speed')
+			this.volumeRng = this.articleEl.querySelector('.ain-player__volume__range-input')
+			this.volumeBtn = this.articleEl.querySelector('.ain-player__volume__button')
+			this.seek      = this.articleEl.querySelector('.ain-player__seek')
+			this.played    = this.articleEl.querySelector('.ain-player__time-played')
 		}
 
 		setContainerHeight() {
@@ -171,6 +172,7 @@
 		}
 
 		initialize() {
+			window.AINarrationData = this.data
 			this.active = true
 			this.player.dataset.active = 'true'
 			this.scrollObserver()
@@ -298,20 +300,6 @@
 			}
 		}
 
-		reset() {
-			this.active = false
-			this.player.dataset.active = 'false'
-
-			this.playIdx = 0
-			this.audio.src = this.files[0]
-			this.audio.currentTime = 0
-			this.seek.value = 0
-
-			this.updateDisplay()
-			this.onPause()
-			this.removeScrollObserver()
-		}
-
 		updateDisplay() {
 			this.playedTime[this.playIdx] = Math.round(this.audio.currentTime)
 			this.totalPlay = Math.floor(this.playedTime.reduce((total,num) => total + num), 0)
@@ -339,6 +327,24 @@
 			this.bufferedTime[idx] = fileBufferedTime
 			const totalBufferedTime = Math.round(this.bufferedTime.reduce((total,num) => total + num), 0)
 			this.player.style.setProperty('--buffered', `${totalBufferedTime / this.totalDuration * 100}%`)
+		}
+
+		reset() {
+			this.setInactive()
+
+			this.playIdx = 0
+			this.audio.src = this.files[0]
+			this.audio.currentTime = 0
+			this.seek.value = 0
+
+			this.updateDisplay()
+			this.removeScrollObserver()
+		}
+
+		setInactive() {
+			this.active = false
+			this.onPause()
+			this.element.classList.remove('ain--downpage')
 		}
 
 		calculateTime(secs) {
@@ -473,16 +479,52 @@
 	}
 
 	const AINarration = {
-		init() {
+		players: [],
 
+		init() {
+			window.players = this.players
+
+			if (window.AINarrationData) {
+				const articleEl = document.querySelector('main article')
+				this.insertPlayer(AINarrationData, articleEl)
+			}
+
+			window.addEventListener('narration_check', (e) => { this.checkForNarration(e.detail) })
+		},
+
+		checkForNarration(articleData) {
+			const year = articleData.year
+			const slug = articleData.slug
+			const el   = articleData.el
+
+			if (!year || !slug || !el ) {
+				return
+			}
+
+			fetch(`/wp-content/narrations/${year}/${slug}/index.json?100`)
+				.then(response => {
+					if (response.ok) {
+						return response.text()
+					}
+					return false
+				})
+				.then(response => {
+					const data = JSON.parse(response)
+					this.insertPlayer(data, el)
+				})
+				.catch(e => { 
+					console.log(e)
+					return false 
+				})
+		},
+
+		insertPlayer(data, articleEl) {
+			document.body.classList.add('has-ai-narration')
+			this.players.push(new AINPlayer(data, articleEl))
 		}
 	}
 
 	window.addEventListener('DOMContentLoaded', function() {
-		if (window.AINarrationData) {
-			window.ainPlayers = []
-			ainPlayers.push(new AINPlayer(AINarrationData))
-			document.body.classList.add('has-ai-narration')
-		}
+		AINarration.init()
 	})
 }())
