@@ -512,35 +512,21 @@ class AI_Narration_Public {
 			$article_schema_idx = $this->find_newsarticle_schema($schema['@graph']);
 
 			if ($article_schema_idx > -1) {
-				if ( !isset($schema['@graph'][$article_schema_idx]['associatedMedia']) ) {
-					$schema['@graph'][$article_schema_idx]['associatedMedia'] = array();
-				}
+				if ( !isset($schema['@graph'][$article_schema_idx]['audio']) ) {
+					$index_data = json_decode(file_get_contents($index_file), true);
+					
+					$duration = array_sum($index_data['audio']['duration']);
+					$duration = $this->get_iso8601_duration($duration);
 
-				$index_data = json_decode(file_get_contents($index_file), true);
-				$tracks = $index_data['audio']['tracks'];
-
-				foreach ( $tracks as $idx => $track ) {
-					$track_num = $idx + 1;
-
-					$duration = 0;
-					if (isset($index_data['audio']['duration'])){
-						$duration = $this->get_iso8601_duration($index_data['audio']['duration'][$idx]);
-					}
-
-					$schema['@graph'][$article_schema_idx]['associatedMedia'][] = array(
+					$schema['@graph'][$article_schema_idx]['audio'] = array(
 						'@type'          => 'AudioObject',
-						'contentUrl'     => $index_data['url'],
+						'contentUrl'     => get_site_url() . $index_data['audio']['tracks'][0],
 						'encodingFormat' => 'audio/mpeg',
-						'position'       => $track_num,
-						'duration'       => $duration,
-						'name'           => $schema['@graph'][$article_schema_idx]['headline'],
-						'description'    => $schema['@graph'][$article_schema_idx]['description'],
-						'dateUploaded'   => $schema['@graph'][$article_schema_idx]['dateModified'],
 						'inLanguage'     => 'en',
-						'isPartOf'       => array(
-							'@type' => 'CreativeWork',
-							'@id'   => $index_data['url']
-						)
+						'duration'       => $duration,
+						'uploadDate'     => $schema['@graph'][$article_schema_idx]['dateModified'],
+						'name'           => $schema['@graph'][$article_schema_idx]['headline'],
+						'description'    => $schema['@graph'][$article_schema_idx]['description']
 					);
 				}
 			}
