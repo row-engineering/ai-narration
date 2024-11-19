@@ -142,7 +142,7 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 	color: #f9fafb;
 }
 
-/* pro */
+/* Pro */
 
 .ain-admin-toolbar .ain-logo .ain-pro-label {
 	margin-left: 8px;
@@ -255,7 +255,7 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 }
 
 .ain-admin-page input[type="checkbox"] {
-	margin-top: 5px;
+	margin: -3px 5px 0 0;
 }
 
 /* Tables / Groupings */
@@ -266,6 +266,12 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 	border: none;
 	overflow: hidden;
 	box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.1);
+}
+
+.ain-admin-page .tablenav {
+	height: auto;
+	padding: 0;
+	clear: unset;
 }
 
 .ain-admin-page .wp-list-table thead th,
@@ -288,93 +294,6 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 	padding: 11px 0 0 3px;
 }
 
-.ain-admin-page input[type="checkbox"] {
+.ain-admin-page .wp-list-table input[type="checkbox"] {
 	margin: 0 0 10px 12px;
-}
-
-/*
-	Settings: Languages (page=mt-languages)
-*/
-
-#ain-language-primary > div {
-	margin-bottom: 10px;
-}
-
-.ain-lang-last th,
-.ain-lang-last td {
-	border-bottom: 8px solid #f0f0f1;
-}
-
-#ain-language-list tr:hover,
-#ain-language-list tr:focus-within {
-	background: #f0f0f1;
-}
-
-td.ain-lang-path {
-	font-family: monospace;
-	font-size: 12px;
-	line-height: 1.72em;
-}
-
-#ain-language-list input[type="checkbox"] {
-	margin: -1px 0 10px 12px;
-}
-
-#ain-language-list thead,
-#ain-language-list tbody {
-	/* display: block; */
-	overflow-x: hidden;
-}
-
-#ain-language-list tbody {
-	/* height: 50vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    min-height: 312px; */
-
-	display: block;
-	height: 360px;
-	overflow: auto;
-}
-
-#ain-language-list thead,
-#ain-language-list tbody tr {
-	display: table;
-	width: 100%;
-	table-layout: fixed; /* even columns width , fix width of table too*/
-}
-
-#ain-language-list thead {
-	width: 100%;
-}
-
-/* Cache */
-
-#ain-org-options ul {
-	list-style: none;
-	margin: 8px 0 0;
-	padding: 0;
-	font-size: 13px;
-	float: left;
-	color: #646970;
-}
-
-#ain-org-options ul li {
-	display: inline-block;
-	margin: 0;
-	padding: 0;
-	white-space: nowrap;
-}
-
-#ain-org-options a.current {
-	color: #000;
-	font-weight: 600;
-	border: none;
-}
-
-#ain-org-options a {
-	line-height: 2;
-	padding: 0.2em;
-	text-decoration: none;
-	color: #0783be;
 }

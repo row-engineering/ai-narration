@@ -144,6 +144,12 @@ class AI_Narration_Admin {
 
 		$ai_narration_voices = AI_NARRATION_SERVICES['openai']['voices'];
 
+		$post_types = array( 'post' => 'Post' );
+		$post_type_objs = get_post_types(array('public' => true, '_builtin' => false), 'objects');
+		foreach ($post_type_objs as $slug => $data) {
+			$post_types[$slug] = $data->labels->singular_name;
+		}
+
 		$pages = array(
 			'ain-settings' => array(
 
@@ -231,32 +237,16 @@ class AI_Narration_Admin {
 					'label'   => 'Post Types',
 					'section' => 'ai_narration_exclusions',
 					'type'    => 'checkbox',
-					'options' => array(
-						'post'    => 'Post',
-						'blog'    => 'Blog',
-						// TO DO: auto-populate from custom post types
-					),
+					'options' => $post_types,
 					'default' => array('post')
 				),
 				array(
 					'uid'     => 'ai_narration_excluded_terms',
-					'label'   => 'Excluded Terms',
+					'label'   => 'Excluded Tags',
 					'section' => 'ai_narration_exclusions',
 					'type'    => 'textarea',
-					'supplemental' => 'Comma-separated.',
+					'supplemental' => 'Comma-separated. For more custom exclusions (by custom taxonomy, custom field, or any other criteria), see the <strong>narration_request</strong> filter.',
 					'default' => 'skip-ai-narration'
-				),
-				array(
-					'uid'     => 'ai_narration_exclusion_taxonomy',
-					'label'   => 'Exclusion Taxonomy',
-					'section' => 'ai_narration_exclusions',
-					'type'    => 'select',
-					'options' => array(
-						'post_tag' => 'Tag',
-						'category' => 'Category',
-						// TO DO: auto-populate from custom taxonomies
-					),
-					'default' => array('post_tag')
 				),
 				array(
 					'uid'     => 'ai_narration_cutoff',

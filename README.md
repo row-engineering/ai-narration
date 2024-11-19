@@ -18,8 +18,8 @@ To install and work on AI Narration locally:
 
 ```bash
 cd /path/to/wordpress/wp-content/plugins
-git clone https://github.com/row-engineering/ai-audio.git
-cd ai-audio
+git clone https://github.com/row-engineering/ai-narration.git
+cd ai-narration
 ```
 
 Go to the Plugins page in the WordPress dashboard to activate.

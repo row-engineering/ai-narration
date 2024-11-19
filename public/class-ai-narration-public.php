@@ -45,8 +45,7 @@ class AI_Narration_Public {
 	private $files_dir;
 	private $eligible_post_types;
 	private $exclusion_terms;
-	private $exclusion_tax;
-	private $cutoff_date;
+	public  $cutoff_date;
 	private $word_limit_min;
 	private $word_limit_max;
 	private $text_content;
@@ -83,7 +82,6 @@ class AI_Narration_Public {
 		// Exclusions
 		$this->eligible_post_types  = $this->get_eligible_post_types();
 		$this->exclusion_terms      = $this->get_exclusion_terms();
-		$this->exclusion_tax        = $this->get_exclusion_tax();
 		$this->cutoff_date          = $this->get_cutoff_date();
 		$this->word_limit_min       = $this->get_word_limit_min();
 		$this->word_limit_max       = $this->get_word_limit_max();
@@ -175,17 +173,6 @@ class AI_Narration_Public {
 		}
 
 		return $excl_terms;
-	}
-
-	private function get_exclusion_tax() {
-		$excl_taxonomy = '';
-
-		$ain_excl_taxonomy = get_option( 'ai_narration_exclusion_taxonomy' );
-		if ( !empty($ain_excl_taxonomy) && isset($ain_excl_taxonomy[0]) ) {
-			$excl_taxonomy = $ain_excl_taxonomy[0];
-		}
-
-		return $excl_taxonomy;
 	}
 
 	private function get_cutoff_date() {
@@ -328,7 +315,7 @@ class AI_Narration_Public {
 			return false;
 		}
 
-		$post_terms = get_the_terms( $this->post_id, $this->exclusion_tax );
+		$post_terms = get_the_terms( $this->post_id, 'post_tag' );
 		if ( $post_terms ) {
 			$term_slugs = array_map(function($t) { return $t->slug; }, $post_terms );
 			if ( count(array_intersect($term_slugs, $this->exclusion_terms)) > 0 ) {
@@ -411,7 +398,7 @@ class AI_Narration_Public {
 		//	If it's too short or too long then return nothing
 		$wc_in_range = $wc >= $this->word_limit_min && $wc <= $this->word_limit_max;
 		if ( !$wc_in_range ) {
-			// error_log("get_text_block_groups: word count out of allowable range. min: {$this->word_limit_min} max: {$this->word_limit_max} total: $wc");
+			error_log("get_text_block_groups: word count out of allowable range. min: {$this->word_limit_min} max: {$this->word_limit_max} total: $wc");
 			$block_groups = array();
 		}
 
@@ -444,13 +431,25 @@ class AI_Narration_Public {
 				$data['segment']++;
 				$data['text'] = implode("\n\n", $text_group);
 
+				// mainly this is an opportunity to pass back a false value and stop the request
+				// $data_mod = apply_filters('narration_request', $data);
+				$data_mod = $data;
+
 				// error_log(json_encode(array_map(function($d) { return gettype($d) === 'string' && strlen($d)>197 ? substr($d,0,197).'...' : $d; }, $data)));
+
+				if ( !$this->validate_data($data, $data_mod) ) {
+					$responses[] = array(
+						'message' => 'Request stopped due to narration_request filter',
+						'request_data' => $data_mod
+					);
+					return;
+				}
 
 				$responses[] = wp_remote_post(
 					"https://{$_SERVER['HTTP_HOST']}/wp-content/plugins/ai-narration/endpoint/listen.php",
 					array(
 						'method'  => 'POST',
-						'body'    => json_encode($data),
+						'body'    => json_encode($data_mod),
 						'headers' => array(
 							'Content-Type' => 'application/json',
 						),
@@ -461,6 +460,48 @@ class AI_Narration_Public {
 
 			return $responses;
 		}
+	}
+
+	private function validate_data($data, $data_mod) {
+		if (!$data || !$data_mod) {
+			return false;
+		}
+
+		$is_valid = true;
+
+		$uneditable_values = array(
+			'key',
+			'id',
+			'date',
+			'segment',
+			'total'
+		);
+		
+		foreach ($uneditable_values as $key => $type) {
+			if ( !array_key_exists($key, $data_mod) || $data[$key] !== $data_mod[$key] ) {
+				error_log("The value of $key cannot be modified.");
+				$is_valid = false;
+				break;
+			}
+		}
+
+		$expected_types = array(
+			'title'   => 'string',
+			'url'     => 'string',
+			'slug'    => 'string',
+			'authors' => 'array',
+			'text'    => 'string'
+		);
+
+		foreach ($expected_types as $key => $type) {
+			if ( !array_key_exists($key, $data_mod) || gettype($data[$key]) !== $type ) {
+				error_log("Expecting the value of $key to be of type $type.");
+				$is_valid = false;
+				break;
+			}
+		}
+
+		return $is_valid;
 	}
 
 	/******************
@@ -514,7 +555,7 @@ class AI_Narration_Public {
 			if ($article_schema_idx > -1) {
 				if ( !isset($schema['@graph'][$article_schema_idx]['audio']) ) {
 					$index_data = json_decode(file_get_contents($index_file), true);
-					
+
 					$duration = array_sum($index_data['audio']['duration']);
 					$duration = $this->get_iso8601_duration($duration);
 

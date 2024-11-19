@@ -18,5 +18,11 @@
 	<div class="ain-box ain-section ain-section-status ain-w3">
 		<h2>Setup</h2>
 		<p>Hello.</p>
+		<p><strong>A list of things to remember to mention here:</strong></p>
+		<ul>
+			<li>- the <span style="font-family:monospace;">narration_check</span> custom event</li>
+			<li>- the <span style="font-family:monospace;">json_schema_org</span> filter</li>
+			<li>- the <span style="font-family:monospace;">narration_request</span> filter</li>
+		</ul>
     </div>
 </div>
