@@ -141,13 +141,17 @@
 
 		playNextClip() {
 			if (this.playIdx < this.files.length - 1) {
-				this.playIdx++
-				this.audio.src = this.files[this.playIdx]
-				this.audio.playbackRate = this.playRate
+				this.updateSrc(this.playIdx + 1)
 				this.audio.play()
 			} else {
 				this.reset()
 			}
+		}
+
+		updateSrc(idx) {
+			this.playIdx = idx
+			this.audio.src = this.files[this.playIdx]
+			this.audio.playbackRate = this.playRate
 		}
 
 		/************
@@ -261,25 +265,26 @@
 			}
 
 			let time = 0
-			this.durations.forEach((length, idx) => {
+			for (let idx = 0, l = this.durations.length; idx < l; idx++) {
+				const length = this.durations[idx]
 				if (time + length < seekTime) {
 					time += length
 				} else {
 					const audioTime = seekTime - time
 					// if switching to a different audio file
 					if (idx !== this.playIdx) {
-						this.playedTime = this.files.map((t, idx2) => {
-							return idx2 < idx ? this.durations[idx2] : (idx2 > idx ? 0 : audioTime)
+						this.playedTime = this.files.map((t, i) => {
+							return i < idx ? this.durations[i] : (i > idx ? 0 : audioTime)
 						})
-						this.playIdx = idx
-						this.audio.src = this.files[idx]
+						this.updateSrc(idx)
 					}
 					this.audio.currentTime = audioTime
 					if (!this.audio.paused) {
 						this.audio.play()
 					}
+					break
 				}
-			})
+			}
 			this.updateDisplay()
 		}
 
@@ -497,7 +502,7 @@
 			}
 
 			window.addEventListener('narration_check', (e) => { this.checkForNarration(e.detail) })
-			
+
 			window.addEventListener('ain_play', (e) => { this.pauseOtherPlayers(e.detail) })
 		},
 
@@ -521,9 +526,9 @@
 					const data = JSON.parse(response)
 					this.insertPlayer(data, el)
 				})
-				.catch(e => { 
+				.catch(e => {
 					console.log(e)
-					return false 
+					return false
 				})
 		},
 
