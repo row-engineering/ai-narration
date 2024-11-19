@@ -259,6 +259,8 @@
 		}
 
 		onSliderInput(seekTime) {
+			const audioPaused = this.audio.paused
+
 			if (seekTime === Math.floor(this.totalDuration)) {
 				this.reset()
 				return
@@ -279,7 +281,7 @@
 						this.updateSrc(idx)
 					}
 					this.audio.currentTime = audioTime
-					if (!this.audio.paused) {
+					if (!audioPaused) {
 						this.audio.play()
 					}
 					break
