@@ -10,8 +10,8 @@
 			this.durations     = this.data.audio.duration
 			this.loadIdx       = 0      // which audio file are we loading?
 			this.playIdx       = 0      // which audio file are we playing?
-			this.bufferedTime  = [0]    // tracking buffered time for all files
-			this.playedTime    = [0]    // tracking played time for all files
+			this.bufferedTime  = this.files.map(f => { return 0 })    // tracking buffered time for all files
+			this.playedTime    = this.files.map(f => { return 0 })    // tracking played time for all files
 			this.totalPlay     = 0      // combining played time for all files
 			this.totalDuration = this.durations.reduce((total,num) => total + num, 0)
 
@@ -26,7 +26,6 @@
 			this.seek.max = Math.floor(this.totalDuration)
 
 			this.setContainerHeight()
-			this.initSequentialLoading()
 			this.addPlaybackEventListeners()
 			this.mediaSessionSetup()
 			this.setAudioMilestones()
@@ -116,26 +115,17 @@
 			this.container.style.minHeight = `${this.container.clientHeight}px`
 		}
 
-		initSequentialLoading() {
-			// TO DO: wait to load the next clip until the current one is nearly done playing
-			this.audio.addEventListener('progress', () => this.displayBuffered())
-			this.audio.addEventListener('canplaythrough', () => {
-				this.displayBuffered()
-				this.preloadNextClip()
-			})
-			this.audio.addEventListener('ended', () => this.playNextClip())
-		}
-
 		preloadNextClip() {
-			if (this.loadIdx < this.files.length - 1) {
-				this.loadIdx++
-				const preloading = new Audio()
-				preloading.addEventListener('progress', () => this.displayBuffered(preloading, this.loadIdx))
-				preloading.addEventListener('canplaythrough', () => {
-					this.displayBuffered(preloading, this.loadIdx)
-					this.preloadNextClip()
-				})
-				preloading.src = this.files[this.loadIdx]
+			if (this.audio.currentTime >= this.audio.duration - 15) {
+				const loadIdx = this.playIdx + 1
+				const alreadyLoaded = loadIdx === this.loadIdx || this.bufferedTime[loadIdx]
+				if (!alreadyLoaded && loadIdx < this.files.length - 1) {
+					const preloading = new Audio()
+					preloading.addEventListener('progress', () => this.displayBuffered(preloading, loadIdx))
+					preloading.addEventListener('canplaythrough', () => this.displayBuffered(preloading, loadIdx))
+					preloading.src = this.files[loadIdx]
+					this.loadIdx = loadIdx
+				}
 			}
 		}
 
@@ -175,6 +165,9 @@
 					this.volumeBtn.parentElement.classList.toggle('active')
 				}
 			})
+
+			this.audio.addEventListener('progress', () => this.displayBuffered())
+			this.audio.addEventListener('ended', () => this.playNextClip())
 		}
 
 		initialize() {
@@ -295,6 +288,8 @@
 		whilePlaying() {
 			this.updateDisplay()
 			this.trackProgress()
+			this.displayBuffered()
+			this.preloadNextClip()
 			this.raf = requestAnimationFrame(() => this.whilePlaying())
 		}
 
@@ -339,7 +334,12 @@
 
 			const fileBufferedTime = Math.round(src.buffered.end(src.buffered.length - 1))
 			this.bufferedTime[idx] = fileBufferedTime
-			const totalBufferedTime = Math.round(this.bufferedTime.reduce((total,num) => total + num), 0)
+			// if reader jumps ahead, there might be a skipped-over file that's unbuffered & will cause the buffer bar to look like
+			// the upcoming audio isn't preloading. 
+			const bufferedTime = this.bufferedTime.map((t, idx) => {
+				return (idx < this.playIdx && !t) ? this.durations[idx] : t
+			})
+			const totalBufferedTime = Math.round(bufferedTime.reduce((total,num) => total + num), 0)
 			this.player.style.setProperty('--buffered', `${totalBufferedTime / this.totalDuration * 100}%`)
 		}
 
@@ -531,7 +531,7 @@
 					this.insertPlayer(data, el)
 				})
 				.catch(e => {
-					console.log(e)
+					console.error(e)
 					return false
 				})
 		},
