@@ -50,7 +50,7 @@
 				<div class="ain__container">
 					<div class="ain">
 						<div class="ain-player" data-play="pause" data-volume="on" data-active="false">
-							<audio class="ain-track" src="${this.files[0]}" preload="metadata"></audio>
+							<audio class="ain-track" data-src="${this.files[0]}" preload="metadata"></audio>
 							<div class="ain-player__intro">
 								<button class="ain-player__cta">
 									<div class="ain-player__cta__icon ain-player__icon ain-player__icon--large">
@@ -178,6 +178,8 @@
 		}
 
 		initialize() {
+			this.audio.src = this.audio.dataset.src
+			this.audio.removeAttribute('data-src')
 			window.AINarrationData = this.data
 			this.active = true
 			this.player.dataset.active = 'true'

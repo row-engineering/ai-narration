@@ -476,7 +476,7 @@ class AI_Narration_Public {
 			'segment',
 			'total'
 		);
-		
+
 		foreach ($uneditable_values as $key => $type) {
 			if ( !array_key_exists($key, $data_mod) || $data[$key] !== $data_mod[$key] ) {
 				error_log("The value of $key cannot be modified.");
