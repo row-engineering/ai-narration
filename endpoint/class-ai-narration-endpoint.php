@@ -134,7 +134,7 @@ class AI_Narration_Endpoint {
 		unset($index_data['segment']);
 
 		//	Update: track path
-		$index_data['audio']['tracks'][] = wp_normalize_path(AI_NARRATION_DIR . $audio_path);
+		$index_data['audio']['tracks'][] = wp_normalize_path(get_option('cdn') . AI_NARRATION_DIR . $audio_path);
 		sort($index_data['audio']['tracks']);
 
 		//	Update: durations

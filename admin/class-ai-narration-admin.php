@@ -229,6 +229,12 @@ class AI_Narration_Admin {
 					'section' => 'ai_narration_frontend',
 					'type'    => 'text',
 				),
+				array(
+					'uid'     => 'cdn',
+					'label'   => 'CDN (optional)',
+					'section' => 'ai_narration_frontend',
+					'type'    => 'text',
+				),
 
 				/*	Section: Exclusions */
 
