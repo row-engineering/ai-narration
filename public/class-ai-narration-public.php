@@ -432,8 +432,7 @@ class AI_Narration_Public {
 				$data['text'] = implode("\n\n", $text_group);
 
 				// mainly this is an opportunity to pass back a false value and stop the request
-				// $data_mod = apply_filters('narration_request', $data);
-				$data_mod = $data;
+				$data_mod = apply_filters('narration_request', $data);
 
 				// error_log(json_encode(array_map(function($d) { return gettype($d) === 'string' && strlen($d)>197 ? substr($d,0,197).'...' : $d; }, $data)));
 
