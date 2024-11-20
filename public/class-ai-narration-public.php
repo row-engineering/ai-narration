@@ -477,7 +477,7 @@ class AI_Narration_Public {
 			'total'
 		);
 
-		foreach ($uneditable_values as $key => $type) {
+		foreach ($uneditable_values as $key) {
 			if ( !array_key_exists($key, $data_mod) || $data[$key] !== $data_mod[$key] ) {
 				error_log("The value of $key cannot be modified.");
 				$is_valid = false;
@@ -522,21 +522,6 @@ class AI_Narration_Public {
 		}
 	}
 
-	/**
-	 * {
-	 * 		"@type": "MediaObject",
-	 * 		"contentUrl": "https://www.yourwebsite.com/wp-content/uploads/audio_1.mp3",
-	 * 		"encodingFormat": "audio/mpeg",
-	 * 		"duration": "PT5M30S",
-	 * 		"position": 1,
-	 * 		"description": "Part 1 of the audio narration",
-	 * 		"inLanguage": "en",
-	 * 		"isPartOf": {
-	 * 			"@type": "CreativeWork",
-	 * 			"@id": "https://www.yourwebsite.com/your-article-url/"
-	 * 		}
-	 * }
-	 */
 	public function output_audio_schema($schema) {
 
 		if ( !is_single() ) return;

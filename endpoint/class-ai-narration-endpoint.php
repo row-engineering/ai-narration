@@ -102,7 +102,7 @@ class AI_Narration_Endpoint {
 	private function update_post_index($data, $audio_index, $audio_dir) {
 		$index_data = array();
 		$index_file = AI_NARRATION_PATH . "{$audio_dir}/index.json";
-		$audio_path = "{$audio_dir}/audio_{$audio_index}.mp3";
+		$audio_path = sprintf('%s/audio_%02d.mp3', $audio_dir, $audio_index);
 
 		$curr_index_data = false;
 		$query_in_progress = false;
@@ -209,7 +209,7 @@ class AI_Narration_Endpoint {
 		$response = $this->send_request($data);
 
 		if ($response) {
-			$file_name = AI_NARRATION_PATH . "{$audio_dir}/audio_{$audio_index}.mp3";
+			$file_name = AI_NARRATION_PATH . sprintf('%s/audio_%02d.mp3', $audio_dir, $audio_index);
 			file_put_contents($file_name, $response);
 		} else {
 			return false;
