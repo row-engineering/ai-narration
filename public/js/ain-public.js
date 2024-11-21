@@ -6,6 +6,7 @@
 		constructor(ainData, articleEl) {
 			this.articleEl     = articleEl
 			this.data          = ainData
+			this.config        = AINarrationData.config
 			this.files         = this.data.audio.tracks
 			this.durations     = this.data.audio.duration
 			this.loadIdx       = 0      // which audio file are we loading?
@@ -40,9 +41,9 @@
 
 		playerMarkup() {
 			let learnMoreLink = ''
-			if (this.data.config.learnMoreLink) {
+			if (this.config && this.config.learnMoreLink) {
 				learnMoreLink = `
-					<a class="ain-player__about" href="${this.data.config.learnMoreLink}" target="_blank">Learn more</a>
+					<a class="ain-player__about" href="${this.config.learnMoreLink}" target="_blank">Learn more</a>
 				`
 			}
 			return `
@@ -145,7 +146,7 @@
 		}
 
 		getSrc(idx) {
-			return (this.data.config && this.data.config.cdn ? this.data.config.cdn : '') + this.files[idx]
+			return (this.config && this.config.cdn ? this.config.cdn : '') + this.files[idx]
 		}
 
 		/************

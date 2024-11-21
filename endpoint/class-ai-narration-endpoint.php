@@ -126,10 +126,6 @@ class AI_Narration_Endpoint {
 			'duration' => $query_in_progress ? $curr_index_data['audio']['duration'] : array(),
 			'tracks'   => $query_in_progress ? $curr_index_data['audio']['tracks'] : array()
 		);
-		$index_data['config'] = array(
-			'learnMoreLink' => get_option('learn_more_link'),
-			'cdn'           => trim(get_option('cdn'), '/')
-		);
 		unset($index_data['text']);
 		unset($index_data['total']);
 		unset($index_data['segment']);
