@@ -49,7 +49,7 @@
 				<div class="ain__container">
 					<div class="ain">
 						<div class="ain-player" data-play="pause" data-volume="on" data-active="false">
-							<audio class="ain-track" data-src="${this.files[0]}" preload="metadata"></audio>
+							<audio class="ain-track" data-src="${this.getSrc(0)}" preload="metadata"></audio>
 							<div class="ain-player__intro">
 								<button class="ain-player__cta">
 									<div class="ain-player__cta__icon ain-player__icon ain-player__icon--large">
@@ -123,7 +123,7 @@
 					const preloading = new Audio()
 					preloading.addEventListener('progress', () => this.displayBuffered(preloading, loadIdx))
 					preloading.addEventListener('canplaythrough', () => this.displayBuffered(preloading, loadIdx))
-					preloading.src = this.files[loadIdx]
+					preloading.src = this.getSrc(loadIdx)
 					this.loadIdx = loadIdx
 				}
 			}
@@ -140,8 +140,12 @@
 
 		updateSrc(idx) {
 			this.playIdx = idx
-			this.audio.src = this.files[this.playIdx]
+			this.audio.src = this.getSrc(this.playIdx)
 			this.audio.playbackRate = this.playRate
+		}
+
+		getSrc(idx) {
+			return (this.data.config && this.data.config.cdn ? this.data.config.cdn : '') + this.files[idx]
 		}
 
 		/************
@@ -348,7 +352,7 @@
 			this.fadeout()
 
 			this.playIdx = 0
-			this.audio.src = this.files[0]
+			this.audio.src = this.getSrc(0)
 			this.audio.currentTime = 0
 			this.audio.playbackRate = this.playRate
 			this.playedTime = [0]
