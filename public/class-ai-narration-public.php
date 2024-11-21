@@ -562,7 +562,7 @@ class AI_Narration_Public {
 
 	private function get_iso8601_duration($seconds) {
 		$minutes = floor($seconds / 60);
-		$seconds = floor($seconds % 60);
+		$seconds = floor($seconds) % 60;
 		return "PT{$minutes}M{$seconds}S";
 	}
 
