@@ -508,6 +508,9 @@ class AI_Narration_Public {
 	 ******************/
 
 	public function output_audio_js_obj() {
+	
+		if ( !is_single() ) return;
+
 		$this->get_post_info();
 		$eligible_post = $this->is_post_eligible();
 		if ( $eligible_post ) {
