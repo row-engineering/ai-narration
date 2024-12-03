@@ -162,10 +162,13 @@ class AI_Narration {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new AI_Narration_Admin( $this->get_plugin_name(), $this->get_version() );
+		if (isset($_GET['page']) && $_GET['page'] === 'ai-narration-settings') {
+			$plugin_admin = new AI_Narration_Admin( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+			$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
+			$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		}
+
 	}
 
 	/**
