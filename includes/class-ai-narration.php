@@ -190,9 +190,12 @@ class AI_Narration {
 			$this->loader->add_action( 'wp_enqueue_scripts',     $plugin_public, 'enqueue_styles' );
 			$this->loader->add_action( 'wp_enqueue_scripts',     $plugin_public, 'enqueue_scripts' );
 			$this->loader->add_action( 'wp_footer',              $plugin_public, 'enqueue_svg_sprite' );
-			$this->loader->add_filter( 'transition_post_status', $plugin_public, 'request_new_audio', 20, 3 );
 			$this->loader->add_filter( 'json_schema_org',        $plugin_public, 'output_audio_schema', 20, 1 );
 			$this->loader->add_action( 'wp_head',                $plugin_public, 'output_audio_js_obj', 20, 0 );
+
+			if ( get_option('ai_narration_auto_generate') ) {
+				$this->loader->add_filter( 'transition_post_status', $plugin_public, 'request_new_audio', 20, 3 );
+			}
 		}
 	}
 

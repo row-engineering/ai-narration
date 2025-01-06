@@ -184,6 +184,13 @@ class AI_Narration_Admin {
 				// TO DO: select which block types to narration? Paragraph & pullquote by default
 
 				array(
+					'uid'     => 'ai_narration_auto_generate',
+					'label'   => 'Auto-Generate on Publish',
+					'section' => 'ai_narration_features',
+					'type'    => 'checkbox',
+					'default' => false
+				),
+				array(
 					'uid'     => 'ai_narration_intro_text',
 					'label'   => 'Introduction Text',
 					'section' => 'ai_narration_features',
@@ -291,7 +298,7 @@ class AI_Narration_Admin {
 	public function field_callback( $arguments ) {
 		$value = get_option( $arguments['uid'] );
 
-		if( ! $value && isset($arguments['default']) ) {
+		if ( !$value && isset($arguments['default']) ) {
 			$value = $arguments['default'];
 		}
 
@@ -311,7 +318,7 @@ class AI_Narration_Admin {
 
 			case 'select':
 			case 'multiselect':
-				if( ! empty ( $arguments['options'] ) && is_array( $arguments['options'] ) ){
+				if ( !empty($arguments['options']) && is_array($arguments['options']) ) {
 					$attributes = '';
 					$options_markup = '';
 					foreach( $arguments['options'] as $key => $label ){
@@ -325,16 +332,51 @@ class AI_Narration_Admin {
 				break;
 
 			case 'radio':
-			case 'checkbox':
-				if( ! empty ( $arguments['options'] ) && is_array( $arguments['options'] ) ){
+				if ( !empty($arguments['options']) && is_array($arguments['options']) ) {
 					$options_markup = '';
 					$iterator = 0;
-					foreach( $arguments['options'] as $key => $label ){
+					foreach ($arguments['options'] as $key => $label) {
 						$iterator++;
-						$checked = (in_array($key, $value)) ? 'checked' : '';
-						$options_markup .= sprintf( '<label for="%1$s_%6$s"><input id="%1$s_%6$s" name="%1$s[]" type="%2$s" value="%3$s" %4$s /> %5$s</label><br/>', $arguments['uid'], $arguments['type'], $key, $checked, $label, $iterator );
+						$checked = ($value === $key) ? 'checked' : '';
+						$options_markup .= sprintf(
+							'<label for="%1$s_%6$s"><input id="%1$s_%6$s" name="%1$s" type="%2$s" value="%3$s" %4$s /> %5$s</label><br/>',
+							$arguments['uid'],
+							$arguments['type'],
+							$key,
+							$checked,
+							$label,
+							$iterator
+						);
 					}
-					printf( '<fieldset>%s</fieldset>', $options_markup );
+					printf('<fieldset>%s</fieldset>', $options_markup);
+				}
+				break;
+
+			case 'checkbox':
+				if ( !empty($arguments['options']) && is_array($arguments['options']) ) {
+					$options_markup = '';
+					$iterator = 0;
+					foreach ($arguments['options'] as $key => $label) {
+						$iterator++;
+						$checked = (is_array($value) && in_array($key, $value)) ? 'checked' : '';
+						$options_markup .= sprintf(
+							'<label for="%1$s_%6$s"><input id="%1$s_%6$s" name="%1$s[]" type="%2$s" value="%3$s" %4$s /> %5$s</label><br/>',
+							$arguments['uid'],
+							$arguments['type'],
+							$key,
+							$checked,
+							$label,
+							$iterator
+						);
+					}
+					printf('<fieldset>%s</fieldset>', $options_markup);
+				} else {
+					$checked = $value ? 'checked' : '';
+					printf(
+						'<input id="%1$s" name="%1$s" type="checkbox" %2$s />',
+						$arguments['uid'],
+						$checked
+					);
 				}
 				break;
 		}
