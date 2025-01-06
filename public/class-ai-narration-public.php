@@ -330,6 +330,23 @@ class AI_Narration_Public {
 			return false;
 		}
 
+		$blocks = parse_blocks($this->post->post_content);
+		$word_count = array_reduce($blocks, function($wc, $b) {
+			$block_wc = 0;
+			if ( $b['blockName'] === 'core/paragraph' || $b['blockName'] === 'core/heading' ) {
+				if ( isset($b['innerHTML']) ) {
+					$block_content = trim(rtrim(strip_tags($b['innerHTML']), "&nbsp;\n"));
+					$block_wc = str_word_count($block_content);
+				}
+			}
+			return $wc + $block_wc;
+		}, 0);
+		$wc_in_range = $word_count >= $this->word_limit_min && $word_count <= $this->word_limit_max;
+		if ( !$wc_in_range ) {
+			// error_log("is_post_eligible: FAIL: word count. min: {$this->word_limit_min} max: {$this->word_limit_max} total: $word_count");
+			return false;
+		}
+
 		// error_log('is_post_eligible: PASS');
 		return true;
 	}
@@ -339,14 +356,6 @@ class AI_Narration_Public {
 	 */
 	private function get_text_block_groups() {
 		$blocks = parse_blocks( $this->post->post_content );
-
-		$block_groups = array();
-		$block_groups_index = 0;
-		$current_group = '';
-
-		$min_length =  600;
-		$max_length = 2000;
-		$wc = 0;
 
 		$intro_text = $this->get_intro_text();
 		if (!empty($intro_text)) {
@@ -364,6 +373,13 @@ class AI_Narration_Public {
 			);
 		}
 
+		$text_groups   = array();
+		$current_group = 0;
+		$current_text  = '';
+
+		$max_words  = 2000;
+		$max_chars  = 4096;	// OpenAI limit
+
 		foreach ($blocks as $block) {
 			switch($block['blockName']) {
 				case 'core/paragraph':
@@ -371,38 +387,31 @@ class AI_Narration_Public {
 					if (isset($block['innerHTML'])) {
 						$block_content = trim(rtrim(strip_tags($block['innerHTML']), "&nbsp;\n"));
 						if (!empty($block_content)) {
-							$block_len = strlen($block_content);
-							$wc += $block_len;
+							$block_words = str_word_count($block_content);
+							$block_chars = strlen($block_content);
 
-							/* The first MP3 file should be shorter and therfore a smaller filesize */
-							$len = ($block_groups_index === 0) ? $min_length : $max_length;
+							/* The first MP3 file should be a smaller filesize and therefore shorter */
+							$len = ($current_group === 0) ? 600 : $max_words;
 
-							if (strlen($current_group) + $block_len > $len) {
-								$block_groups_index++;
-								$current_group = '';
+							if (str_word_count($current_text) + $block_words > $len || strlen($current_text) + $block_chars > $max_chars) {
+								$current_group++;
+								$current_text = '';
 							}
 
-							$block_groups[$block_groups_index][] = $block_content;
-							$current_group .= $block_content;
+							$text_groups[$current_group][] = $block_content;
+							$current_text .= $block_content;
 						}
 					}
 					break;
 				case 'core/separator':
-					if ($block_groups_index > 0) {
-						$block_groups[$block_groups_index][] = '...';
+					if ($current_group > 0) {
+						$text_groups[$current_group][] = '...';
 					}
 					break;
 			}
 		}
 
-		//	If it's too short or too long then return nothing
-		$wc_in_range = $wc >= $this->word_limit_min && $wc <= $this->word_limit_max;
-		if ( !$wc_in_range ) {
-			error_log("get_text_block_groups: word count out of allowable range. min: {$this->word_limit_min} max: {$this->word_limit_max} total: $wc");
-			$block_groups = array();
-		}
-
-		return $block_groups;
+		return $text_groups;
 	}
 
 	/*
@@ -435,6 +444,7 @@ class AI_Narration_Public {
 				$data_mod = apply_filters('narration_request', $data);
 
 				// error_log(json_encode(array_map(function($d) { return gettype($d) === 'string' && strlen($d)>197 ? substr($d,0,197).'...' : $d; }, $data)));
+				error_log('STRLEN: ' . strlen($data['text']));
 
 				if ( !$this->validate_data($data, $data_mod) ) {
 					$responses[] = array(
@@ -456,6 +466,8 @@ class AI_Narration_Public {
 					)
 				);
 			}
+
+			error_log(json_encode($responses));
 
 			return $responses;
 		}
@@ -508,7 +520,7 @@ class AI_Narration_Public {
 	 ******************/
 
 	public function output_audio_js_obj() {
-	
+
 		if ( !is_single() ) return;
 
 		$this->get_post_info();
