@@ -60,15 +60,15 @@ class AI_Narration_Endpoint {
 				$audio_index = $post_data['segment'];
 				$audio_text  = $post_data['text'];
 
-				$success = $this->request_conversion($audio_text, $audio_index, $audio_dir);
+				$response = $this->request_conversion($audio_text, $audio_index, $audio_dir);
 
-				if ($success) {
+				if ($response['status'] === 200) {
 					$this->update_post_index($post_data, $audio_index, $audio_dir);
 				}
+
+				$this->apply_response_and_exit($response['status'], $response['message']);
 			}
 		}
-
-		$this->apply_response_and_exit(200, 'All good.');
 	}
 
 	/**
@@ -152,12 +152,12 @@ class AI_Narration_Endpoint {
 		if ($this->debug) {
 			$message .= ' Debug enabled.';
 		}
-		http_response_code($code);
-		print json_encode(array(
-			'status'  => $code,
-			'message' => $message
-		));
-		exit;
+
+		if ($code === 200) {
+			wp_send_json_success([ 'message' => $message ]);
+		} else {
+			wp_send_json_error([ 'message' => $message ], $code);
+		}
 	}
 
 	/**
@@ -205,14 +205,12 @@ class AI_Narration_Endpoint {
 
 		$response = $this->send_request($data);
 
-		if ($response) {
+		if ($response['status'] === 200) {
 			$file_name = AI_NARRATION_PATH . sprintf('%s/audio_%02d.mp3', $audio_dir, $audio_index);
-			file_put_contents($file_name, $response);
-		} else {
-			return false;
+			file_put_contents($file_name, $response['data']);
 		}
 
-		return true;
+		return $response;
 	}
 
 	/**
@@ -235,20 +233,30 @@ class AI_Narration_Endpoint {
 			]);
 			curl_setopt($ch, CURLOPT_POST, true);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-			$response = curl_exec($ch);
-			if (curl_errno($ch)) {
-				curl_close($ch);
-				return false;
+
+			$api_response = curl_exec($ch);
+
+			// get the response code
+			$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+			if ($http_code === 200) {
+				$response = array(
+					'status'  => 200,
+					'message' => 'Success, young Padawan.',
+					'data'    => $api_response
+				);
+			} else {
+				$header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+				$body = json_decode(substr($api_response, $header_size));
+				$response = array(
+					'status'  => $http_code,
+					'message' => "Request to TTS service returned an error: {$body->error->type}: {$body->error->message}"
+				);
 			}
 
-			$contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
 			curl_close($ch);
-
-			if (strpos($contentType, 'text') !== false || strpos($contentType, 'json') !== false) {
-				print_r($response);
-				exit;
-			}
 		}
+
 		return $response;
 	}
 

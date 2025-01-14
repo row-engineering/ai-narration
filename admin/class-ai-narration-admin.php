@@ -54,7 +54,7 @@ class AI_Narration_Admin {
 		add_action('wp_ajax_nopriv_post_lookup', array( $this, 'post_lookup'));
 		add_action('wp_ajax_tag_lookup',         array( $this, 'tag_lookup'));
 		add_action('wp_ajax_nopriv_tag_lookup',  array( $this, 'tag_lookup'));
-		
+
 		// Posts/Narrations admin callbacks
 		add_action('wp_ajax_generate_narration',  array( $this, 'handle_generate_narration'));
 		add_action('wp_ajax_delete_narration',   array( $this, 'handle_delete_narration'));
@@ -304,7 +304,7 @@ class AI_Narration_Admin {
 
 		$placeholder = (isset($arguments['placeholder'])) ? $arguments['placeholder'] : '';
 
-		switch( $arguments['type'] ){
+		switch ($arguments['type']) {
 			case 'text':
 			case 'password':
 			case 'number':
@@ -435,39 +435,42 @@ class AI_Narration_Admin {
 
 	public function handle_generate_narration() {
 		check_ajax_referer('narration_nonce', 'nonce');
-		
+
 		if (!current_user_can('manage_options')) {
 			wp_send_json_error('Unauthorized');
 		}
-		
+
 		$post_ids = $_POST['post_ids'];
-		
+
 		foreach ($post_ids as $post_id) {
 			$post = get_post($post_id);
 
 			$plugin = new AI_Narration();
 			$plugin_public = new AI_Narration_Public( $plugin->get_plugin_name(), $plugin->get_version() );
 
-			// TO DO: ensure response was successful and, if OpenAI returned an error, then serve up an error here accordingly
-			$plugin_public->request_new_audio('publish', 'draft', $post);
+			$response = $plugin_public->request_new_audio('publish', 'draft', $post);
+
+			if ($response['status'] === 200) {
+				wp_send_json_success($response);
+			} else {
+				wp_send_json_error($response, $response['status']);
+			}
 		}
-		
-		wp_send_json_success();
 	}
 
 	public function handle_delete_narration() {
 		check_ajax_referer('narration_nonce', 'nonce');
-		
+
 		if (!current_user_can('manage_options')) {
 			wp_send_json_error('Unauthorized');
 		}
-		
+
 		$post_ids = $_POST['post_ids'];
-		
+
 		foreach ($post_ids as $post_id) {
 			$this->delete_narration($post_id);
 		}
-		
+
 		wp_send_json_success();
 	}
 
@@ -488,7 +491,7 @@ class AI_Narration_Admin {
 		}, glob("$directory/*") );
     return rmdir($directory);
 	}
-	
+
 	/************************************************** GENERAL **************************************************/
 
 	public function enqueue_styles() {

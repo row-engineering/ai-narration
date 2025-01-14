@@ -288,89 +288,119 @@ class AI_Narration_Public {
 	 * GENERATE AUDIO *
 	 ******************/
 
+	/**
+	 * STATUS CODES
+	 *
+	 * 28 - Request to listen() timed out (API request possibly still succesful, just taking longer than usual)
+	 * 3X - Post not eligible
+	 * 4  - Post not found
+	 * 5  - Post failed after narration_request filter
+	 */
 	public function request_new_audio($new_status, $old_status, $post) {
+		$response = array(
+			'status' => 200
+		);
+
 		if ($new_status === 'publish' && $old_status !== 'publish') {
 			$this->get_post_info( $post );
 
 			if (!$this->post) {
-				return;
+				$response = array(
+					'status'  => 4,
+					'message' => 'Could not find post'
+				);
 			}
 
-			$eligible_post = $this->is_post_eligible();
-			if ( $eligible_post ) {
+			$post_eligibility = $this->is_post_eligible();
+			if ( $post_eligibility['status'] === 200 ) {
 				$text_groups = $this->get_text_block_groups();
 				if ( !empty($text_groups) ) {
-					return $this->generate_audio_files($text_groups);
+					$response = $this->generate_audio_files($text_groups);
 				}
+			} else {
+				$response = $post_eligibility;
 			}
+		} else {
+			$response = array(
+				'status' => 6,
+				'message' => 'Post must be newly published.'
+			);
 		}
 
-		return false;
+		$response['post_id'] = $this->post_id;
+
+		return $response;
 	}
 
 	private function is_post_eligible() {
+		$response = array(
+			'status'  => 200,
+			'message' => 'Post passes exclusion criteria'
+		);
+
 		$post_type = get_post_type( $this->post );
 		if ( !in_array( $post_type, $this->eligible_post_types) ) {
-			// error_log('is_post_eligible: FAIL: post type');
-			return false;
+			$response = array(
+				'status'  => 31,
+				'message' => 'Post excluded based on: post type'
+			);
 		}
 
 		$post_terms = get_the_terms( $this->post_id, 'post_tag' );
 		if ( $post_terms ) {
 			$term_slugs = array_map(function($t) { return $t->slug; }, $post_terms );
 			if ( count(array_intersect($term_slugs, $this->exclusion_terms)) > 0 ) {
-				// error_log('is_post_eligible: FAIL: terms');
-				return false;
+				$response = array(
+					'status'  => 32,
+					'message' => 'Post excluded based on: post tag'
+				);
 			}
 		}
 
 		$post_date = $this->post->post_date;
 		if ( strtotime($post_date) < strtotime($this->cutoff_date) ) {
-			// error_log('is_post_eligible: FAIL: date');
-			return false;
+			$response = array(
+				'status'  => 33,
+				'message' => 'Post excluded based on: post date'
+			);
 		}
 
-		$blocks = parse_blocks($this->post->post_content);
-		$word_count = array_reduce($blocks, function($wc, $b) {
-			$block_wc = 0;
-			if ( $b['blockName'] === 'core/paragraph' || $b['blockName'] === 'core/heading' ) {
-				if ( isset($b['innerHTML']) ) {
-					$block_content = trim(rtrim(strip_tags($b['innerHTML']), "&nbsp;\n"));
-					$block_wc = str_word_count($block_content);
-				}
-			}
-			return $wc + $block_wc;
-		}, 0);
-		$wc_in_range = $word_count >= $this->word_limit_min && $word_count <= $this->word_limit_max;
-		if ( !$wc_in_range ) {
-			// error_log("is_post_eligible: FAIL: word count. min: {$this->word_limit_min} max: {$this->word_limit_max} total: $word_count");
-			return false;
+		$request_groups = $this->get_text_block_groups(false);
+		$wc = array_sum( array_map(function($paragraphs) {
+			return array_sum( array_map('str_word_count', $paragraphs) );
+		}, $request_groups) );
+		if ( $wc < $this->word_limit_min || $wc > $this->word_limit_max ) {
+			$response = array(
+				'status'  => 34,
+				'message' => "Post excluded based on: word count (min: {$this->word_limit_min} max: {$this->word_limit_max} total: $wc)"
+			);
 		}
 
-		// error_log('is_post_eligible: PASS');
-		return true;
+		return $response;
 	}
 
 	/**
 	 * Combine all the post blocks into a group array to be processed
 	 */
-	private function get_text_block_groups() {
+	private function get_text_block_groups($include_intro_outro = true) {
 		$blocks = parse_blocks( $this->post->post_content );
 
-		$intro_text = $this->get_intro_text();
-		if (!empty($intro_text)) {
-			array_unshift($blocks, array(
-				'blockName' => 'core/paragraph',
-				'innerHTML' => $intro_text
-			));
-		}
+		if ($include_intro_outro) {
+			$intro_text = $this->get_intro_text();
+			if (!empty($intro_text)) {
+				array_unshift($blocks, array(
+					'blockName' => 'core/paragraph',
+					'innerHTML' => $intro_text
+				));
+			}
 
-		$outro_text = $this->get_outro_text();
-		if (!empty($outro_text)) {
-			$blocks[] = array(
-				'blockName' => 'core/paragraph',
-				'innerHTML' => $outro_text
-			);
+			$outro_text = $this->get_outro_text();
+			if (!empty($outro_text)) {
+				$blocks[] = array(
+					'blockName' => 'core/paragraph',
+					'innerHTML' => $outro_text
+				);
+			}
 		}
 
 		$text_groups   = array();
@@ -435,8 +465,13 @@ class AI_Narration_Public {
 				'text'    => ''
 			);
 
-			$responses = array();
+			$response = array();
 			foreach ($text_groups as $text_group) {
+				// if there's an error, no use in continuing to try sending requests
+				if ( is_wp_error($response) || ( array_key_exists('status', $response) && $response['status'] !== 200 ) ) {
+					break;
+				}
+
 				$data['segment']++;
 				$data['text'] = implode("\n\n", $text_group);
 
@@ -444,32 +479,41 @@ class AI_Narration_Public {
 				$data_mod = apply_filters('narration_request', $data);
 
 				// error_log(json_encode(array_map(function($d) { return gettype($d) === 'string' && strlen($d)>197 ? substr($d,0,197).'...' : $d; }, $data)));
-				error_log('STRLEN: ' . strlen($data['text']));
 
-				if ( !$this->validate_data($data, $data_mod) ) {
-					$responses[] = array(
-						'message' => 'Request stopped due to narration_request filter',
-						'request_data' => $data_mod
+				if ( $this->validate_data($data, $data_mod) ) {
+					$request = wp_remote_post(
+						"https://{$_SERVER['HTTP_HOST']}/wp-content/plugins/ai-narration/endpoint/listen.php",
+						array(
+							'method'  => 'POST',
+							'body'    => json_encode($data_mod),
+							'headers' => array(
+								'Content-Type' => 'application/json',
+							),
+							'timeout' => 180,
+						)
 					);
-					return;
+					$response_body = json_decode($request['body'], true);
+					$response = array(
+						'status' => $request['response']['code'],
+						'message' => $response_body['data']['message'],
+					);
+				} else {
+					$response = array(
+						'status'  => 5,
+						'message' => 'Request stopped due to narration_request filter (see your dev team)',
+						'data'    => $data_mod
+					);
 				}
+			}
 
-				$responses[] = wp_remote_post(
-					"https://{$_SERVER['HTTP_HOST']}/wp-content/plugins/ai-narration/endpoint/listen.php",
-					array(
-						'method'  => 'POST',
-						'body'    => json_encode($data_mod),
-						'headers' => array(
-							'Content-Type' => 'application/json',
-						),
-						'timeout' => 5,
-					)
+			if ( is_wp_error($response) ) {
+				$response = array(
+					'status' => 28,
+					'message' => 'Request timed out'
 				);
 			}
 
-			error_log(json_encode($responses));
-
-			return $responses;
+			return $response;
 		}
 	}
 
@@ -524,8 +568,8 @@ class AI_Narration_Public {
 		if ( !is_single() ) return;
 
 		$this->get_post_info();
-		$eligible_post = $this->is_post_eligible();
-		if ( $eligible_post ) {
+		$post_eligibility = $this->is_post_eligible();
+		if ( $post_eligibility['status'] === 200 ) {
 			if ( $index_file = $this->get_index_file($this->post) ) {
 				$narration_json = file_get_contents($index_file);
 				$narration_data = json_decode($narration_json, true);

@@ -1,4 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
+	if ( !document.body.classList.contains('ai-narrations_page_ai-narration-narrations') ) {
+		return;
+	}
+
 	const fetchConfig = {
 		method: 'POST',
 		headers: {
@@ -21,35 +25,50 @@ document.addEventListener('DOMContentLoaded', function () {
 		return formData.toString();
 	}
 
-	async function generateNarration(postIds) {
+	async function generateNarration(postIDs) {
+		if (!window.sup) {
+			window.sup = {}
+		}
+		postIDs.forEach(postID => getStatusUpdates(postID))
+
 		try {
 			const response = await fetch(ajaxurl, {
 				...fetchConfig,
 				body: serializeData({
 					action: 'generate_narration',
-					post_ids: postIds,
+					post_ids: postIDs,
 					nonce: narrationAdmin.nonce
 				})
 			});
-			const data = await response.json();
+			const data = await response.json()
 			if (data.success) {
-				location.reload();
+				const reply = data.data
+				if (reply) {
+					if (reply.status !== 200) {
+						updateBtnText(reply.post_id, 'Generation failed')
+						alert(`Couldn't generate narration for post ${reply.post_id}. ${reply.message}`)
+					}
+				}
 			} else {
-				throw new Error(data.data || 'Unknown error');
+				if (data.data) {
+					updateBtnText(data.data.post_id, 'Generation failed')
+					alert(`Error generating narration. ${data.data.message}`);
+				}
 			}
 		} catch (error) {
+			updateBtnText(error.post_id, 'Generation failed')
 			console.error('Error generating narration:', error);
 			alert('Error generating narration: ' + error.message);
 		}
 	}
 
-	async function deleteNarration(postIds) {
+	async function deleteNarration(postIDs) {
 		try {
 			const response = await fetch(ajaxurl, {
 				...fetchConfig,
 				body: serializeData({
 					action: 'delete_narration',
-					post_ids: postIds,
+					post_ids: postIDs,
 					nonce: narrationAdmin.nonce
 				})
 			});
@@ -62,6 +81,66 @@ document.addEventListener('DOMContentLoaded', function () {
 		} catch (error) {
 			console.error('Error deleting narration:', error);
 			alert('Error deleting narration: ' + error.message);
+		}
+	}
+
+	function getStatusUpdates(postID) {
+		const btn = document.querySelector(`.generate-narration[data-post-id="${postID}"]`)
+		const postRow = btn.closest('tr')
+		const postLink = postRow.querySelector('td.column-title a')
+		const postURL = postLink.href
+		const postPath = postURL.replace(location.origin, '').replace(/^\/|\/$/g, '')
+
+		const maxTime = 10 * 60 * 1000 // 10 min
+		let attempts = 0
+
+		btn.innerHTML = 'Generating...'
+
+		sup[postID] = setInterval(() => {
+			attempts++
+			if (attempts * 3000 > maxTime) {
+				stopChecking(postID, 'Generation timed out')
+			}
+
+			fetch(`/wp-content/narrations/${postPath}/index.json`)
+			.then(response => {
+				if (response.ok) {
+					return response.json()
+				}
+				return false
+			})
+			.then(data => {
+				if (data.audio) {
+					const totalTracks = data.audio.total
+					const tracksGenerated = data.audio.tracks.length
+	
+					if (tracksGenerated < totalTracks) {
+						updateBtnText(postID, `Generating ${tracksGenerated}/${totalTracks}...`)
+					} else {
+						stopChecking(postID, 'Generated!')
+					}
+				}
+			})
+			.catch(error => {
+				console.error('Error checking audio generation progress', error)
+				if (attempts > 10) {
+					stopChecking(postID, 'Generation error')
+				}
+			}
+		)
+		}, 3000)
+	}
+
+	function stopChecking(postID, text) {
+		updateBtnText(postID, text)
+		clearInterval(sup[postID])
+		sup[postID] = false
+	}
+
+	function updateBtnText(postID, text) {
+		const btn = document.querySelector(`.generate-narration[data-post-id="${postID}"]`)
+		if (btn) {
+			btn.innerHTML = text
 		}
 	}
 
