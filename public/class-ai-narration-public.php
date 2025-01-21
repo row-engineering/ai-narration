@@ -649,13 +649,9 @@ class AI_Narration_Public {
 	 * @since    1.0.0
 	 */
 	public function enqueue_styles() {
-		global $post;
 		if (!is_single()) return;
 
-		$has_narration = $this->get_index_file($post);
-		if ( $has_narration ) {
-			wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ain-public.css', array(), $this->version, 'all' );
-		}
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ain-public.css', array(), $this->version, 'all' );
 	}
 
 	/**
@@ -664,27 +660,19 @@ class AI_Narration_Public {
 	 * @since    1.0.0
 	 */
 	public function enqueue_scripts() {
-		global $post;
 		if (!is_single()) return;
 
-		$has_narration = $this->get_index_file($post);
-		if ( $has_narration ) {
-			wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ain-public.js', array(), $this->version, false );
-		}
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ain-public.js', array(), $this->version, false );
 	}
 
 	public function enqueue_svg_sprite() {
-		global $post;
 		if (!is_single()) return;
 
-		$has_narration = $this->get_index_file($post);
-		if ( $has_narration ) {
-			$sprite = plugin_dir_path( __FILE__ ) . 'assets/sprite.svg';
-			if ( file_exists($sprite) ) {
-				echo '<div style="display: none;">';
-				include_once $sprite;
-				echo '</div>';
-			}
+		$sprite = plugin_dir_path( __FILE__ ) . 'assets/sprite.svg';
+		if ( file_exists($sprite) ) {
+			echo '<div style="display: none;">';
+			include_once $sprite;
+			echo '</div>';
 		}
 	}
 
