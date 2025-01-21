@@ -6,7 +6,7 @@
 		constructor(ainData, articleEl) {
 			this.articleEl     = articleEl
 			this.data          = ainData
-			this.config        = AINarrationData.config
+			this.config        = this.data.config
 			this.files         = this.data.audio.tracks
 			this.durations     = this.data.audio.duration
 			this.loadIdx       = 0      // which audio file are we loading?
@@ -509,35 +509,26 @@
 				this.insertPlayer(AINarrationData, articleEl)
 			}
 
-			window.addEventListener('narration_check', (e) => { this.checkForNarration(e.detail) })
+			window.addEventListener('insert_narration', (e) => { this.infiniteScrollNarration(e.detail) })
 
 			window.addEventListener('ain_play', (e) => { this.pauseOtherPlayers(e.detail) })
 		},
 
-		checkForNarration(articleData) {
-			const year = articleData.year
-			const slug = articleData.slug
-			const el   = articleData.el
+		infiniteScrollNarration(articleData) {
+			const el = articleData.el
+			let narrationData = articleData.narrationData
 
-			if (!year || !slug || !el ) {
+			if (!narrationData || !el) {
 				return
 			}
 
-			fetch(`/wp-content/narrations/${year}/${slug}/index.json`)
-				.then(response => {
-					if (response.ok) {
-						return response.text()
-					}
-					return false
-				})
-				.then(response => {
-					const data = JSON.parse(response)
-					this.insertPlayer(data, el)
-				})
-				.catch(e => {
-					console.error(e)
-					return false
-				})
+			try {
+				narrationData = narrationData.replace('window.AINarrationData = ', '')
+				narrationData = JSON.parse(narrationData)
+				this.insertPlayer(narrationData, el)
+			} catch(e) {
+				console.log('Unable to parse AI Narration data', e)
+			}
 		},
 
 		insertPlayer(data, articleEl) {
