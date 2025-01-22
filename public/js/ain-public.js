@@ -547,7 +547,11 @@
 		}
 	}
 
-	window.addEventListener('DOMContentLoaded', function() {
+	if (document.readyState !== 'loading') {
 		AINarration.init()
-	})
+	} else {
+		window.addEventListener('DOMContentLoaded', function() {
+			AINarration.init()
+		})
+	}
 }())
