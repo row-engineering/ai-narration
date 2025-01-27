@@ -681,7 +681,7 @@ class AI_Narration_Public {
 		if ( $has_narration ) {
 			$sprite = plugin_dir_path( __FILE__ ) . 'assets/sprite.svg';
 			if ( file_exists($sprite) ) {
-				echo '<div style="display: none;">';
+				echo '<div id="ai-narration-sprite" style="display: none;">';
 				include_once $sprite;
 				echo '</div>';
 			}
