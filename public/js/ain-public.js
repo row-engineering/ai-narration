@@ -33,9 +33,21 @@
 		}
 
 		insertPlayer() {
-			const firstGraf = this.articleEl.querySelector('.post-content > p:first-child')
-			if (firstGraf) {
-				firstGraf.insertAdjacentHTML('afterend', this.playerMarkup(true))
+			const paragraphs = this.articleEl.querySelectorAll('.post-content > p')
+			
+			let insertionPt
+			let charCount = 0
+			for (const p of paragraphs) {
+				if (charCount < 180) {
+					charCount += p.textContent.length
+					insertionPt = p
+				} else {
+					break
+				}
+			}
+
+			if (insertionPt) {
+				insertionPt.insertAdjacentHTML('afterend', this.playerMarkup(true))
 			}
 		}
 
@@ -339,7 +351,7 @@
 			const fileBufferedTime = Math.round(src.buffered.end(src.buffered.length - 1))
 			this.bufferedTime[idx] = fileBufferedTime
 			// if reader jumps ahead, there might be a skipped-over file that's unbuffered & will cause the buffer bar to look like
-			// the upcoming audio isn't preloading. 
+			// the upcoming audio isn't preloading.
 			const bufferedTime = this.bufferedTime.map((t, idx) => {
 				return (idx < this.playIdx && !t) ? this.durations[idx] : t
 			})
