@@ -602,14 +602,22 @@ class AI_Narration_Public {
 
 			if ($article_schema_idx > -1) {
 				if ( !isset($schema['@graph'][$article_schema_idx]['audio']) ) {
-					$index_data = json_decode(file_get_contents($index_file), true);
 
-					$duration = array_sum($index_data['audio']['duration']);
-					$duration = $this->get_iso8601_duration($duration);
+					$index_data = json_decode(file_get_contents($index_file), true);
+					$contentUrl = '';
+					$duration   = 0;
+
+					if (isset($index_data['audio'])) {
+						if (isset($index_data['audio']['duration'])) {
+							$duration = array_sum($index_data['audio']['duration']);
+							$duration = $this->get_iso8601_duration($duration);
+						}
+						$contentUrl = get_site_url() . $index_data['audio']['tracks'][0];
+					}
 
 					$schema['@graph'][$article_schema_idx]['audio'] = array(
 						'@type'          => 'AudioObject',
-						'contentUrl'     => get_site_url() . $index_data['audio']['tracks'][0],
+						'contentUrl'     => $contentUrl,
 						'encodingFormat' => 'audio/mpeg',
 						'inLanguage'     => 'en',
 						'duration'       => $duration,
@@ -617,6 +625,7 @@ class AI_Narration_Public {
 						'name'           => $schema['@graph'][$article_schema_idx]['headline'],
 						'description'    => $schema['@graph'][$article_schema_idx]['description']
 					);
+
 				}
 			}
 		}
