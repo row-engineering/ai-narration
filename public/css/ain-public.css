@@ -508,7 +508,7 @@
 	border-top: 1px solid var(--pumice, #CACACA);
 	border-bottom-left-radius: 0px;
 	border-bottom-right-radius: 0px;
-	z-index: 15;
+	z-index: 100;
 	animation: fade-in 500ms ease forwards;
 }
 
