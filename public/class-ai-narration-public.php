@@ -587,7 +587,7 @@ class AI_Narration_Public {
 
 	public function output_audio_schema($schema) {
 
-		if ( !is_single() ) return;
+		if ( !is_single() ) return $schema;
 
 		global $post;
 
