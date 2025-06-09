@@ -124,11 +124,11 @@
 		}
 
 		setContainerHeight() {
-			// so that the space is held when the player jumps down to fixed position on scroll
-			this.container.style.minHeight = `${this.container.clientHeight}px`;
-			// sensible fallback when calculation misfires when story dynamically loads
-			const safeHeight = (currentHeight > 150 || currentHeight < 50) ? 77 : currentHeight;
-    		this.container.style.minHeight = `${safeHeight}px`;
+			// add a min-height so that the space is held when the player jumps down to fixed position on scroll
+			// sometimes this runs before the CSS file has loaded, and the clientHeight is incorrect, so use a sensible fallback
+			const currentHeight = this.container.clientHeight
+			const safeHeight = (currentHeight > 150 || currentHeight < 50) ? 77 : currentHeight
+			this.container.style.minHeight = `${safeHeight}px`
 		}
 
 		preloadNextClip() {
