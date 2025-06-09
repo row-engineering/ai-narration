@@ -615,6 +615,11 @@ class AI_Narration_Public {
 						$contentUrl = get_site_url() . $index_data['audio']['tracks'][0];
 					}
 
+					$description = '';
+					if (isset($schema['@graph'][$article_schema_idx]['description'])) {
+						$description = $schema['@graph'][$article_schema_idx]['description'];
+					}
+
 					$schema['@graph'][$article_schema_idx]['audio'] = array(
 						'@type'          => 'AudioObject',
 						'contentUrl'     => $contentUrl,
@@ -623,7 +628,7 @@ class AI_Narration_Public {
 						'duration'       => $duration,
 						'uploadDate'     => $schema['@graph'][$article_schema_idx]['dateModified'],
 						'name'           => $schema['@graph'][$article_schema_idx]['headline'],
-						'description'    => $schema['@graph'][$article_schema_idx]['description']
+						'description'    => $description
 					);
 
 				}
