@@ -76,6 +76,10 @@ class AI_Narration {
 		$this->load_dependencies();
 		$this->set_locale();
 		$this->define_admin_hooks();
+
+		global $plugin_public;
+		$plugin_public = new AI_Narration_Public( $this->plugin_name, $this->version );
+
 		$this->define_public_hooks();
 
 		require_once plugin_dir_path( __FILE__ ) . '../configuration.php';
@@ -177,9 +181,9 @@ class AI_Narration {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new AI_Narration_Public( $this->get_plugin_name(), $this->get_version() );
+		global $plugin_public;
 
-		/* 
+		/*
 			If plugin is enabled, then run
 		*/
 
