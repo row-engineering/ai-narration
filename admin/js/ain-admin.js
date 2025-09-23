@@ -88,9 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	function getStatusUpdates(postID) {
 		const btn = document.querySelector(`.generate-narration[data-post-id="${postID}"]`)
 		const postRow = btn.closest('tr')
-		const postLink = postRow.querySelector('td.column-title a')
-		const postURL = postLink.href
-		const postPath = postURL.replace(location.origin, '').replace(/^\/|\/$/g, '')
+		const postPath = `${postRow.dataset.year}/${postRow.dataset.slug}`
 
 		const maxTime = 10 * 60 * 1000 // 10 min
 		let attempts = 0
