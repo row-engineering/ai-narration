@@ -26,13 +26,15 @@ class Posts_Narration_List_Table extends WP_List_Table {
 
 		$this->_column_headers = array($columns, $hidden, $sortable);
 
-		// Get posts from last two weeks
+		global $plugin_public;
+		$cutoff_date = $plugin_public->get_cutoff_date();
+
 		$args = array(
 			'post_type' => 'post',
 			'post_status' => 'publish',
 			'date_query' => array(
 				array(
-					'after' => '2024-11-01'
+					'after' => $cutoff_date
 				)
 			),
 			'posts_per_page' => -1

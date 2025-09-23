@@ -175,8 +175,11 @@ class AI_Narration_Public {
 		return $excl_terms;
 	}
 
-	private function get_cutoff_date() {
-		$cutoff_date = '1111-11-11 12:00:01';
+	/**
+	 * Determines whether a post will be eligible for narration
+	 */
+	public function get_cutoff_date() {
+		$cutoff_date = '2000-11-11 12:00:00';
 
 		$ain_cutoff_date = trim( get_option( 'ai_narration_cutoff' ) );
 		if ( !empty($ain_cutoff_date) ) {
@@ -184,7 +187,7 @@ class AI_Narration_Public {
 				$date_parts = explode('-', $ain_cutoff_date);
 				$date_valid = checkdate($date_parts[1], $date_parts[2], $date_parts[0]);	// (month, day, year)
 				if ($date_valid) {
-					$cutoff_date = $ain_cutoff_date . ' 12:00:01';
+					$cutoff_date = $ain_cutoff_date . ' 12:00:00';
 				}
 			}
 		}

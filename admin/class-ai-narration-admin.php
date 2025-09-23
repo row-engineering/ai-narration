@@ -266,6 +266,7 @@ class AI_Narration_Admin {
 					'label'   => 'Cut-Off Date',
 					'section' => 'ai_narration_exclusions',
 					'type'    => 'text',	// TO DO: date field
+					'default' => date('Y-m-d', strtotime('-30 days')),
 					'supplemental' => 'Posts published prior to this date will not be narrated. YYYY-MM-DD format.',
 				),
 				array(
