@@ -1,4 +1,4 @@
-ai-narration<?php
+<?php
 
 /**
  * Fired during plugin activation
