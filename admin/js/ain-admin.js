@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			} else {
 				if (data.data) {
 					updateBtnText(data.data.post_id, 'Generation failed')
+					console.error('Error generating narration:', data.data);
 					alert(`Error generating narration. ${data.data.message}`);
 				}
 			}

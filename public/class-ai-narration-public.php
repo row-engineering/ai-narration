@@ -495,11 +495,23 @@ class AI_Narration_Public {
 							'timeout' => 180,
 						)
 					);
-					$response_body = json_decode($request['body'], true);
-					$response = array(
-						'status' => $request['response']['code'],
-						'message' => $response_body['data']['message'],
-					);
+					if ( is_wp_error($request) ) {
+						$response = array(
+							'status'  => 'error',
+							'message' => $request->get_error_message()
+						);
+					} else if ( $request['response']['code'] !== 200 ) {
+						$response = array(
+							'status'  => $request['response']['code'],
+							'message' => 'Error from listen endpoint'
+						);
+					} else {
+						$response_body = json_decode($request['body'], true);
+						$response = array(
+							'status' => $request['response']['code'],
+							'message' => $response_body['data']['message'],
+						);
+					}
 				} else {
 					$response = array(
 						'status'  => 5,
