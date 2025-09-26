@@ -7,6 +7,7 @@
 			this.articleEl     = articleEl
 			this.data          = ainData
 			this.config        = this.data.config
+			this.selector      = this.data.selector
 			this.files         = this.data.audio.tracks
 			this.durations     = this.data.audio.duration
 			this.loadIdx       = 0      // which audio file are we loading?
@@ -33,7 +34,7 @@
 		}
 
 		insertPlayer() {
-			const paragraphs = this.articleEl.querySelectorAll('.post-content > p')
+			const paragraphs = this.articleEl.querySelectorAll('p')
 			
 			let insertionPt
 			let charCount = 0
@@ -477,6 +478,9 @@
 
 		// TO DO: move into core site repo
 		eventLog( eventName, addtlParams = {} ) {
+			if (gtag === 'undefined') {
+				return
+			}
 			const params = Object.assign({
 				audio_title: this.data.title,
 				audio_duration: Math.floor(this.totalDuration),
@@ -520,7 +524,7 @@
 			window.players = this.players
 
 			if (window.AINarrationData) {
-				const articleEl = document.querySelector('main article')
+				const articleEl = document.querySelector( AINarrationData.config.selector )
 				this.insertPlayer(AINarrationData, articleEl)
 			}
 
@@ -569,4 +573,5 @@
 			AINarration.init()
 		})
 	}
+
 }())
