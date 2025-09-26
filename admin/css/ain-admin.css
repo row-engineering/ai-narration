@@ -22,6 +22,12 @@
 	margin-bottom: 0;
 }
 
+.ain-admin-page p.description code {
+	font-size: 11px;
+	background: rgba(0, 0, 0, .03);
+	padding: 3px 3px 2px;
+}
+
 .ain-admin-page .notice.is-dismissible {
 	margin-top: 20px;
 }
@@ -170,14 +176,15 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 		overflow: hidden;
 	}
 
-	.ain-admin-toolbar div.ain-nav-wrap > h2 ,
+	.ain-admin-toolbar div.ain-nav-wrap>h2,
 	.ain-admin-toolbar .ain-nav-promo-wrap {
 		display: none !important;
 	}
+
 	.ain-admin-toolbar .ain-tab {
 		font-size: 12px;
-    	padding-left:  8px;
-    	padding-right: 8px;
+		padding-left: 8px;
+		padding-right: 8px;
 		padding-top: 6px;
 		padding-bottom: 6px;
 		min-height: 30px;
@@ -339,14 +346,14 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 
 /* Page: Narrations */
 
-#ain-page-narrations > .tablenav {
+#ain-page-narrations>.tablenav {
 	margin-top: 16px;
 }
 
 /* Page: Exclusions */
 
 .ain-section-exclusions table fieldset {
-    column-count: 2;
+	column-count: 2;
 }
 
 @media (min-width: 768px) {
