@@ -576,13 +576,22 @@ class AI_Narration_Public {
 				if ( $narration_data['audio']['total'] === count($narration_data['audio']['tracks']) ) {
 					$narration_data['config'] = array(
 						'cdn'           => trim(get_option('cdn'), '/'),
-						'learnMoreLink' => get_option('learn_more_link')
+						'learnMoreLink' => get_option('learn_more_link'),
+						'selector'      => $this->get_post_selector()
 					);
 					$narration_json = json_encode($narration_data);
 					echo "<script id='ai-narration-data'>window.AINarrationData = $narration_json</script>";
 				}
 			}
 		}
+	}
+
+	private function get_post_selector() {
+		$post_selector = trim( get_option('ai_post_selector') );
+		if (empty($post_selector)) {
+			$post_selector = 'main .entry-content';
+		}
+		return $post_selector;
 	}
 
 	public function output_audio_schema($schema) {
