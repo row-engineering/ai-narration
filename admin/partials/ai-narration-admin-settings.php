@@ -25,7 +25,7 @@
 ?>
 <!-- This file should primarily consist of HTML with a little bit of PHP. -->
 
-<div class="wrap limit-width">
+<div class="wrap limit-width" id="ain-page-settings">
 	<form method="POST" action="options.php">
 		<?php
 			settings_fields( 'ain-settings' );

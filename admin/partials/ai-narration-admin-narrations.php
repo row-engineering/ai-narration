@@ -18,9 +18,7 @@ $table->prepare_items();
 
 ?>
 
-<div class="wrap">
-	<h1>AI Narrations</h1>
-
+<div class="wrap" id="ain-page-narrations">
 	<div class="tablenav top">
 		<div class="alignleft actions bulkactions">
 			<button type="button" id="bulk-generate" class="button action">Generate Selected</button>
