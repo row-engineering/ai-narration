@@ -211,14 +211,14 @@ class AI_Narration_Admin {
 					'label'   => 'Introduction Text',
 					'section' => 'ai_narration_features',
 					'type'    => 'textarea',
-					'supplemental' => 'Available variables: %Headline%, %Authors%, %Date%.',
+					'supplemental' => 'Available variables: <code>%Headline%</code> <code>%Authors%</code> <code>%Date%</code><br>Not case-sensitive.',
 					'default' => '%headline% by %authors%. Published %date%. Narrated by AI.'
 				),
 				array(
 					'uid'     => 'ai_narration_outro_text',
 					'label'   => 'Outro Text',
 					'section' => 'ai_narration_features',
-					'supplemental' => 'Available variables: %Headline%, %Authors%, %Date%.',
+					'supplemental' => 'Accepts variables (see above)',
 					'type'    => 'textarea',
 					'default' => false
 				),
@@ -242,22 +242,33 @@ class AI_Narration_Admin {
 				// 	'section' => 'ai_narration_features',
 				// 	'type'    => 'text',
 				// 	'default' => 'narrations',
-				// 	'supplemental' => 'Directory structure: ai-narration/DIRECTORY-NAME/YEAR/POST-SLUG/'
+				// 	'supplemental' => 'Directory structure: <code>/wp-content/&lt;DIRECTORY-NAME&gt;/&lt;YEAR&gt;/&lt;POST-NAME&gt;/</code>.<br>Warning: Changing this later has consequences. <a href="#" target="_blank">Learn more</a>.'
 				// ),
 
 				/*	Section: Front-End Config */
 
 				array(
-					'uid'     => 'learn_more_link',
-					'label'   => 'Learn More Link (optional)',
+					'uid'     => 'ai_post_selector',
+					'label'   => 'Post CSS Selector',
 					'section' => 'ai_narration_frontend',
 					'type'    => 'text',
+					'supplemental' => 'The default selector (and fallback) for standard themes is <code>main .entry-content</code>.',
 				),
+
+				array(
+					'uid'     => 'learn_more_link',
+					'label'   => 'Learn More Link',
+					'section' => 'ai_narration_frontend',
+					'type'    => 'text',
+					'supplemental' => 'Optional'
+				),
+
 				array(
 					'uid'     => 'cdn',
-					'label'   => 'CDN (optional)',
+					'label'   => 'CDN',
 					'section' => 'ai_narration_frontend',
 					'type'    => 'text',
+					'supplemental' => 'Optional'
 				),
 
 				/*	Section: Processing and Eligibility */
