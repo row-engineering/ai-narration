@@ -13,7 +13,7 @@
 	clear: both;
 	font-size: 12px;
 	font-style: normal;
-	margin-bottom: 10px;
+	margin-bottom: 0;
 }
 
 .ain-admin-page .notice.is-dismissible {
@@ -219,7 +219,7 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 /* Form Labels */
 
 .form-table th {
-	padding-top: 26px;
+	padding-top: 14px;
 }
 
 /* Elements: input, textarea, select */
