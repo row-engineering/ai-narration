@@ -350,7 +350,7 @@ class AI_Narration_Admin {
 				printf( '<input name="%1$s" id="%1$s" type="%2$s" placeholder="%3$s" value="%4$s" />', $arguments['uid'], $arguments['type'], $placeholder, $value );
 				break;
 			case 'textarea':
-				printf( '<textarea name="%1$s" id="%1$s" placeholder="%2$s" rows="5" cols="50">%3$s</textarea>', $arguments['uid'], $placeholder, $value );
+				printf( '<textarea name="%1$s" id="%1$s" placeholder="%2$s" rows="2" cols="50">%3$s</textarea>', $arguments['uid'], $placeholder, $value );
 				break;
 
 			case 'select':

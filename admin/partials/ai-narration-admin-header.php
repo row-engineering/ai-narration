@@ -31,7 +31,7 @@ foreach($this->pages as $key => $page) {
 					<img src="/wp-content/plugins/<?= $this->plugin_name; ?>/assets/images/ain-logo.svg" alt="AI Narration plugin logo" title="AI Narration">
 					<!-- <div class="ain-pro-label">PRO</div> -->
 				</a>
-				<h2>AI Narration</h2>
+				<h2>AI Narrations</h2>
 				<?= $submenu_html; ?>
 			</div>
 			<div class="ain-nav-promo-wrap">
