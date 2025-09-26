@@ -24,6 +24,8 @@
 	line-height: 140%;
 }
 
+/* Toolbar / Navigation */
+
 #wpcontent .ain-admin-toolbar {
 	box-sizing: border-box;
 	margin-left: -20px;
@@ -106,7 +108,7 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 }
 
 .ain-admin-toolbar h2 {
-	display: none;
+	margin: 0 1.5em 0 0em;
 	color: #f9fafb;
 }
 
@@ -140,6 +142,40 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 .ain-admin-toolbar .ain-tab:hover {
 	background-color: #475467;
 	color: #f9fafb;
+}
+
+@media (max-width: 375px) {
+	#wpcontent .ain-admin-toolbar {
+		height: 64px;
+		padding-top: 14px;
+		padding-bottom: 14px;
+		margin-left: -30px;
+	}
+
+	.ain-admin-toolbar .ain-logo {
+		margin-right: 14px;
+	}
+
+	.ain-admin-toolbar .ain-logo img {
+		height: 26px;
+	}
+
+	.ain-admin-toolbar .ain-nav-wrap {
+		overflow: hidden;
+	}
+
+	.ain-admin-toolbar div.ain-nav-wrap > h2 ,
+	.ain-admin-toolbar .ain-nav-promo-wrap {
+		display: none !important;
+	}
+	.ain-admin-toolbar .ain-tab {
+		font-size: 12px;
+    	padding-left:  8px;
+    	padding-right: 8px;
+		padding-top: 6px;
+		padding-bottom: 6px;
+		min-height: 30px;
+	}
 }
 
 /* Pro */
@@ -296,4 +332,24 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 
 .ain-admin-page .wp-list-table input[type="checkbox"] {
 	margin: 0 0 10px 12px;
+}
+
+/* Page specific */
+
+/* Page: Narrations */
+
+#ain-page-narrations > .tablenav {
+	margin-top: 16px;
+}
+
+/* Page: Exclusions */
+
+.ain-section-exclusions table fieldset {
+    column-count: 2;
+}
+
+@media (min-width: 768px) {
+	.ain-section-exclusions table fieldset {
+		column-count: 4;
+	}
 }
