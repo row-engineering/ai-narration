@@ -28,7 +28,7 @@ foreach($this->pages as $key => $page) {
 		<div class="ain-admin-toolbar-inner">
 			<div class="ain-nav-wrap">
 				<a href="/wp-admin/admin.php?page=ain-settings" class="ain-logo">
-					<img src="/wp-content/plugins/<?= $this->plugin_name; ?>/assets/images/ain-logo.svg" alt="AI Narration plugin logo" title="AI Narration">
+					<img src="/wp-content/plugins/<?= $this->plugin_name; ?>/assets/images/logo.svg" alt="AI Narration plugin logo" title="AI Narration">
 					<!-- <div class="ain-pro-label">PRO</div> -->
 				</a>
 				<h2>AI Narrations</h2>

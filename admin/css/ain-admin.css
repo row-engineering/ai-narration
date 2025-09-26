@@ -3,6 +3,12 @@
  * included in this file.
  */
 
+/* WOrdPress Menu */
+
+#toplevel_page_ai-narration-settings img {
+	margin: 0px 10px;
+}
+
 /* Header and Navigation */
 
 .ain-admin-page a {

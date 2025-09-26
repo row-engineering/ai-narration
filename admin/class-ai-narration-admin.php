@@ -72,11 +72,13 @@ class AI_Narration_Admin {
 		$slug       = $this->plugin_name . '-settings';
 		$callback   = array( $this, 'plugin_settings_page_content' );
 
+		$icon = plugin_dir_url(__FILE__) . '../assets/images/logo.svg';
+
 		$menu_nested = get_option( 'ai_narration_menu_nested' );
 		if ($menu_nested) {
 			add_options_page( $page_title, $menu_title, $capability, $slug, $callback, 'dashicons-controls-volumeon', 100 );
 		} else {
-			add_menu_page( $page_title, $menu_title, $capability, $slug, $callback, 'dashicons-controls-volumeon', 100 );
+			add_menu_page( $page_title, $menu_title, $capability, $slug, $callback, $icon, 100 );
 		}
 
 		foreach($this->pages as $key => $page) {
