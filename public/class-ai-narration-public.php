@@ -237,9 +237,9 @@ class AI_Narration_Public {
 	}
 
 	public function sprintf_post_meta( $text ) {
-		$text = preg_replace( '/<Headline>/i', $this->post_title,             $text );
-		$text = preg_replace( '/<Date>/i',     $this->get_readable_date(),    $text );
-		$text = preg_replace( '/<Authors>/i',  $this->get_readable_authors(), $text );
+		$text = preg_replace( '/%Headline%/i', $this->post_title,             $text );
+		$text = preg_replace( '/%Date%/i',     $this->get_readable_date(),    $text );
+		$text = preg_replace( '/%Authors%/i',  $this->get_readable_authors(), $text );
 
 		return $text;
 	}

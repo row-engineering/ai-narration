@@ -195,15 +195,16 @@ class AI_Narration_Admin {
 					'label'   => 'Introduction Text',
 					'section' => 'ai_narration_features',
 					'type'    => 'textarea',
-					'supplemental' => 'Available variables: Headline, Authors, Date.',
-					'default' => '<Headline> by <Authors>. Published <Date>. Narrated by AI.'
+					'supplemental' => 'Available variables: %Headline%, %Authors%, %Date%.',
+					'default' => '%headline% by %authors%. Published %date%. Narrated by AI.'
 				),
 				array(
 					'uid'     => 'ai_narration_outro_text',
 					'label'   => 'Outro Text',
 					'section' => 'ai_narration_features',
-					'supplemental' => 'Available variables: Headline, Authors, Date.',
+					'supplemental' => 'Available variables: %Headline%, %Authors%, %Date%.',
 					'type'    => 'textarea',
+					'default' => false
 				),
 				array(
 					'uid'     => 'ai_narration_intro_mp3',
@@ -266,30 +267,39 @@ class AI_Narration_Admin {
 					'label'   => 'Cut-Off Date',
 					'section' => 'ai_narration_exclusions',
 					'type'    => 'text',	// TO DO: date field
-					'supplemental' => 'Posts published prior to this date will not be narrated. YYYY-MM-DD format.',
+					'supplemental' => 'Posts published before this date (<i>YYYY-MM-DD</i>) will not be narrated.',
 				),
+
+				// array(
+				// 	// 'uid'     => 'ai_narration_wc_limit_min',
+				// 	'label'   => 'Word Limits',
+				// 	'section' => 'ai_narration_exclusions',
+				// 	'type'    => 'heading',
+				// 	'supplemental' => 'Posts below the minimum, or above the maximum, word count will be skipped.'
+				// ),
+
 				array(
 					'uid'     => 'ai_narration_wc_limit_min',
-					'label'   => 'Minimum Word Limit',
+					'label'   => 'Minimum Words',
 					'section' => 'ai_narration_exclusions',
 					'type'    => 'number',
 					'default' => 1000,
-					'supplemental' => 'Posts with a lower word count will not be narrated.'
+					'supplemental' => 'Skip posts that with a word count under limit.'
 				),
 				array(
 					'uid'     => 'ai_narration_wc_limit_max',
-					'label'   => 'Maximum Word Limit',
+					'label'   => 'Maximum Words',
 					'section' => 'ai_narration_exclusions',
 					'type'    => 'number',
 					'default' => 20000,
-					'supplemental' => 'Posts with a higher word count will not be narrated.'
+					'supplemental' => 'Skip posts that with a word count over limit.'
 				),
 			),
 		);
 
 		foreach( $pages as $option_group => $fields ){
 			foreach( $fields as $field ){
-				add_settings_field( $field['uid'], $field['label'], array( $this, 'field_callback' ), $option_group, $field['section'], $field );
+				add_settings_field( $field['uid'], $field['label'], array( $this, 'field_callback' ), 	$option_group, $field['section'], $field );
 				register_setting( $option_group, $field['uid'] );
 			}
 		}
@@ -311,7 +321,6 @@ class AI_Narration_Admin {
 			case 'hidden':
 				printf( '<input name="%1$s" id="%1$s" type="%2$s" placeholder="%3$s" value="%4$s" />', $arguments['uid'], $arguments['type'], $placeholder, $value );
 				break;
-
 			case 'textarea':
 				printf( '<textarea name="%1$s" id="%1$s" placeholder="%2$s" rows="5" cols="50">%3$s</textarea>', $arguments['uid'], $placeholder, $value );
 				break;
