@@ -2,10 +2,10 @@
 
 // /wp-content/plugins/ai-narration/endpoint/generate.php
 
-if (!defined('BASE_PATH')) {
-	define('BASE_PATH', realpath($_SERVER['DOCUMENT_ROOT']));
+if (!defined('AI_NARRATION_BASE_PATH')) {
+	define('AI_NARRATION_BASE_PATH', realpath($_SERVER['DOCUMENT_ROOT']));
 }
-require BASE_PATH . '/wp-load.php';
+require AI_NARRATION_BASE_PATH . '/wp-load.php';
 
 $post_id = $_GET['p'];
 if (!$post_id) {
