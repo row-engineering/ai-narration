@@ -1,10 +1,16 @@
 <?php
 
+$page_type = 'admin.php';
+$menu_nested = get_option( 'ai_narration_menu_nested' );
+if ($menu_nested) {
+	$page_type = 'options-general.php';
+}
+
 $submenu_html = '';
 foreach($this->pages as $key => $page) {
 	$activeClass = ($page_name === $key) ? ' is-active' : '';
 	$submenu_html .= implode("", array(
-		"\n<a class=\"ain-tab {$activeClass}\" href=\"/wp-admin/admin.php?page={$this->plugin_name}-{$key}\">",
+		"\n<a class=\"ain-tab {$activeClass}\" href=\"/wp-admin/{$page_type}?page={$this->plugin_name}-{$key}\">",
 			"{$page['title']}",
 		"</a>"
 	));

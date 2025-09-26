@@ -254,10 +254,6 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 
 /* Form Labels */
 
-.form-table th {
-	padding-top: 14px;
-}
-
 /* Elements: input, textarea, select */
 
 .ain-admin-page input[type="text"]:read-only {

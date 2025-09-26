@@ -67,15 +67,20 @@ class AI_Narration_Admin {
 	 */
 	public function create_plugin_settings_page() {
 		$page_title = 'Settings';
-		$menu_title = 'AI Narrations';
+		$menu_title = 'Narrations';
 		$capability = 'manage_options';
 		$slug       = $this->plugin_name . '-settings';
 		$callback   = array( $this, 'plugin_settings_page_content' );
 
-		add_menu_page( $page_title, $menu_title, $capability, $slug, $callback, 'dashicons-controls-volumeon', 100 );
+		$menu_nested = get_option( 'ai_narration_menu_nested' );
+		if ($menu_nested) {
+			add_options_page( $page_title, $menu_title, $capability, $slug, $callback, 'dashicons-controls-volumeon', 100 );
+		} else {
+			add_menu_page( $page_title, $menu_title, $capability, $slug, $callback, 'dashicons-controls-volumeon', 100 );
+		}
 
 		foreach($this->pages as $key => $page) {
-			$s = (isset($page['hide_from_menu'])) ? '' : $slug;
+			$s = (isset($page['hide_from_menu']) || $menu_nested) ? '' : $slug;
 			add_submenu_page(
 				$s,
 				$page['title'],
@@ -122,13 +127,22 @@ class AI_Narration_Admin {
 		add_settings_section( 'ai_narration_frontend',   'Front-End',  array( $this, 'section_callback' ),  'ain-settings',  $args );
 
 		$args['section_class'] = 'exclusions';
-		add_settings_section( 'ai_narration_exclusions', 'Exclusions', array( $this, 'section_callback' ),  'ain-settings', $args );
+		add_settings_section( 'ai_narration_exclusions', 'Processing &amp; Eligibility', array( $this, 'section_callback' ),  'ain-settings', $args );
+
+		$args['section_class'] = 'preferences';
+		add_settings_section( 'ai_narration_preferences', 'Preferences', array( $this, 'section_callback' ),  'ain-settings', $args );
 	}
 
 	public function section_callback( $arguments ) {
 		switch( $arguments['id'] ){
 			case 'ai_narration_service':
 				echo 'Currently the only available service is <a href="https://platform.openai.com/docs/guides/text-to-speech?lang=node" target="_blank">OpenAI TTS</a>';
+				break;
+			// case 'ai_narration_features':
+			// 	echo 'Currently the only available service is <a href="https://platform.openai.com/docs/guides/text-to-speech?lang=node" target="_blank">OpenAI TTS</a>';
+			// 	break;
+			case 'ai_narration_exclusions':
+				echo 'Manage which Posts, and under what conditions, they qualify for a narration';
 				break;
 		}
 	}
@@ -244,7 +258,7 @@ class AI_Narration_Admin {
 					'type'    => 'text',
 				),
 
-				/*	Section: Exclusions */
+				/*	Section: Processing and Eligibility */
 
 				array(
 					'uid'     => 'ai_narration_post_types',
@@ -259,7 +273,7 @@ class AI_Narration_Admin {
 					'label'   => 'Excluded Tags',
 					'section' => 'ai_narration_exclusions',
 					'type'    => 'textarea',
-					'supplemental' => 'Comma-separated. For more custom exclusions (by custom taxonomy, custom field, or any other criteria), see the <strong>narration_request</strong> filter.',
+					'supplemental' => 'Posts with any of these tags will be skipped. Comma-separated. For more custom exclusions (by custom taxonomy, custom field, etc.), see the <strong>narration_request</strong> filter.',
 					'default' => 'skip-ai-narration'
 				),
 				array(
@@ -294,6 +308,20 @@ class AI_Narration_Admin {
 					'default' => 20000,
 					'supplemental' => 'Skip posts that with a word count over limit.'
 				),
+
+				/*	Section: Preferences */
+
+				// TO DO: select which block types to narration? Paragraph & pullquote by default
+
+				array(
+					'uid'     => 'ai_narration_menu_nested',
+					'label'   => 'Menu Location',
+					'section' => 'ai_narration_preferences',
+					'type'    => 'checkbox',
+					'default' => false,
+					'supplemental' => 'Move settings from main Menu to <i>Settings > Narrations</i>.',
+				),
+
 			),
 		);
 
