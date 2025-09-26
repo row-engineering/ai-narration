@@ -1,6 +1,6 @@
 # AI Narration
 
-A WordPress plugin to enable AI-generated audio of posts..
+A WordPress plugin to enable AI-generated audio of posts, to boost accessibility, engagement, and reach.
 
 ## Supporting AI Narration
 
@@ -26,4 +26,4 @@ Go to the Plugins page in the WordPress dashboard to activate.
 
 ## Questions
 
-Guestions are one way to get answers.
+Questions are one way to get answers.
