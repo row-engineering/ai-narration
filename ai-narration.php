@@ -8,9 +8,9 @@
  * @wordpress-plugin
  * Plugin Name:       AI Narration
  * Plugin URI:        https://github.com/row-engineering/ai-narration
- * Description:       AI Narration plugin for news sites
+ * Description:       Generate natural-sounding audio for your posts, making your content more accessible and engaging for readers.
  * Version:           1.0.0
- * Author:            Anna Rasshivkina
+ * Author:            Anna Rasshivkina, Michael Donohoe
  * Author URI:        https://https://github.com/row-engineering
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
@@ -25,7 +25,6 @@ if ( ! defined( 'WPINC' ) ) {
 /**
  * Current plugin version.
  * Start at version 1.0.0 and use SemVer - https://semver.org
- * Rename this for your plugin and update it as you release new versions.
  */
 define( 'AI_NARRATION_VERSION', '1.1.6' );
 
@@ -34,8 +33,7 @@ define( 'AI_NARRATION_BASENAME', plugin_basename( __FILE__ ) );
 include_once dirname(__FILE__) . '/configuration.php';
 
 /**
- * The code that runs during plugin activation.
- * This action is documented in includes/class-ai-narration-activator.php
+ * Plugin activation.
  */
 function activate_ai_narration() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-ai-narration-activator.php';
@@ -43,8 +41,7 @@ function activate_ai_narration() {
 }
 
 /**
- * The code that runs during plugin deactivation.
- * This action is documented in includes/class-ai-narration-deactivator.php
+ * Plugin deactivation.
  */
 function deactivate_ai_narration() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-ai-narration-deactivator.php';
@@ -60,15 +57,6 @@ register_deactivation_hook( __FILE__, 'deactivate_ai_narration' );
  */
 require plugin_dir_path( __FILE__ ) . 'includes/class-ai-narration.php';
 
-/**
- * Begins execution of the plugin.
- *
- * Since everything within the plugin is registered via hooks,
- * then kicking off the plugin from this point in the file does
- * not affect the page life cycle.
- *
- * @since    1.0.0
- */
 function run_ai_narration() {
 
 	$plugin = new AI_Narration();
