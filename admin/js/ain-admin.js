@@ -1,7 +1,4 @@
 document.addEventListener('DOMContentLoaded', function () {
-	if ( !document.body.classList.contains('ai-narrations_page_ai-narration-narrations') ) {
-		return;
-	}
 
 	const fetchConfig = {
 		method: 'POST',
@@ -144,33 +141,93 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 	}
 
-	document.querySelectorAll('.generate-narration').forEach(button => {
-		button.addEventListener('click', function () {
-			generateNarration([this.dataset.postId]);
-		});
-	});
-
-	document.querySelectorAll('.delete-narration').forEach(button => {
-		button.addEventListener('click', function () {
-			deleteNarration([this.dataset.postId]);
-		});
-	});
-
-	document.getElementById('bulk-generate').addEventListener('click', function () {
-		const selectedPosts = Array.from(document.querySelectorAll('input[name="post[]"]:checked'))
-			.map(checkbox => checkbox.value);
-
-		if (selectedPosts.length > 0) {
-			generateNarration(selectedPosts);
+	function getQueryParam(name){
+		if (typeof URLSearchParams !== 'undefined') {
+			const params = new URLSearchParams(window.location.search)
+			return params.get(name)
+		} else {
+			const query = window.location.search.substring(1);
+			const pairs = query.split('&')
+			for (let i = 0; i < pairs.length; i++) {
+				const [key, value] = pairs[i].split('=')
+				if (key === name) {
+					return value ? decodeURIComponent(value.replace(/\+/g, ' ')) : ''
+				}
+			}
+			return null
 		}
-	});
+	}
 
-	document.getElementById('bulk-delete').addEventListener('click', function () {
-		const selectedPosts = Array.from(document.querySelectorAll('input[name="post[]"]:checked'))
-			.map(checkbox => checkbox.value);
-
-		if (selectedPosts.length > 0) {
-			deleteNarration(selectedPosts);
+	function manageServiceVendor () {
+		const select = document.getElementById('ai_narration_service_vendor') || false
+		if (!select) {
+			return
 		}
-	});
+		function checkIfNone() {
+			const el_api_key = document.getElementById('ai_narration_service_api_key').closest('tr')
+			const el_api_voice = document.getElementById('ai_narration_voice').closest('tr')
+			if (select.value === 'none') {
+				console.log('Vendor is None');
+				el_api_key.style.display = el_api_voice.style.display = 'none'
+			} else {
+				el_api_key.style.display = el_api_voice.style.display = 'table-row'
+			}
+		}
+		checkIfNone()
+		select.addEventListener('change', checkIfNone)
+	}
+
+	/* Add Events per Page */
+
+	function addEventsPageSettings() {
+		manageServiceVendor()
+	}
+
+	function addEventsPageNarrations() {
+		document.querySelectorAll('.generate-narration').forEach(button => {
+			button.addEventListener('click', function () {
+				generateNarration([this.dataset.postId])
+			});
+		});
+
+		document.querySelectorAll('.delete-narration').forEach(button => {
+			button.addEventListener('click', function () {
+				deleteNarration([this.dataset.postId])
+			});
+		});
+
+		document.getElementById('bulk-generate').addEventListener('click', function () {
+			const selectedPosts = Array.from(document.querySelectorAll('input[name="post[]"]:checked'))
+				.map(checkbox => checkbox.value)
+
+			if (selectedPosts.length > 0) {
+				generateNarration(selectedPosts)
+			}
+		})
+
+		document.getElementById('bulk-delete').addEventListener('click', function () {
+			const selectedPosts = Array.from(document.querySelectorAll('input[name="post[]"]:checked'))
+				.map(checkbox => checkbox.value)
+
+			if (selectedPosts.length > 0) {
+				deleteNarration(selectedPosts)
+			}
+		});
+	}
+
+	function init() {
+		const page_id = getQueryParam('page')
+		switch (page_id) {
+			case 'ai-narration-settings':
+				addEventsPageSettings()
+				break
+			case 'ai-narration-narrations':
+				addEventsPageNarrations()
+				break
+			default:
+				console.log("no match")
+		}
+	}
+
+	init();
 });
