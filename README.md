@@ -36,8 +36,6 @@ That’s all you need for a basic run. Create or view a single post that has a n
 
 Full explanations for all settings will be added later.
 
-
-
 ## Supporting AI Narration
 
 AI Narration is an open source project with its ongoing development made possible entirely by the engineering team at Rest of World - and potentially others in the future. If you'd like to support these efforts, please consider donation which will also help support our global journalism efforts:
@@ -68,10 +66,30 @@ We are a small team and reviews may not be timley. We also have a narrow focus f
 - Any potential side effects or considerations?
 3. Meaningful Commit Messages
 4. Tests: Include tests or detailed documentation
-  
-## Questions
 
-Questions are one way to get answers.
+## Roadmap: 
+
+Our roadmap for this plugin is relatively modest. The core functionality is in place. Our future efforts will be centered around stability, incremental changes, and UX improvements.
+
+We have identified known areas where this plugin falls short and would welcome any help for those.
+
+### Features and Improvements
+
+- Service Support
+  - Adding support for additional AI TTS services by extending the current system
+- WP Admin
+  - A cleaner way to abort, and redo, narration generations.
+- Internationalization
+  - Any refactoring to better prepare it for language support.
+  - Add support for a second language
+- Actions and Filters
+  - Add new actions or filters at logical/useful points. This may be subjective so use your best judgment.
+- Documentation
+  - Spelling errors
+  - Clearer ways to explain things
+  - Addressing any omissions
+- Security
+  - Please get in touch directly if you find a severe issue and we will prioritize those.
 
 ## Hooks
 
