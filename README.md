@@ -16,20 +16,20 @@ A WordPress plugin to enable AI-generated audio of posts, to boost accessibility
 ### Minimum setup in Settings
 
 1) Choose the service
-Select your TTS or narration service from the dropdown.
-For now Open AI is the only one supported
+- Select your TTS or narration service from the dropdown.
+- For now Open AI is the only one supported
 
 2) Add API key
-Paste the key for the chosen service. Save.
+- Paste the key for the chosen service. Save.
 
 3) Choose a Voice
-The most commons ones known for each service are listed.
+- The most commons ones known for each service are listed.
 
 4) Base directory
-Confirm the base directory where narration assets will be stored or read from. Adjust if your site uses a custom path.
+- Confirm the base directory where narration assets will be stored or read from. Adjust if your site uses a custom path.
 
 5) Post content selector
-The default selector is `.entry-content` and works with default themes. If your post is a custom template this might have been changed. If so you need to provide it here.
+- The default selector is `.entry-content` and works with default themes. If your post is a custom template this might have been changed and you will need to provide it here.
 
 
 That’s all you need for a basic run. Create or view a single post that has a narration index and the script will load.
