@@ -46,7 +46,7 @@ AI Narration is an open source project with its ongoing development made possibl
 
 Rest of World is a 501(c)(3) nonprofit organization and donations in the USA are tax-deductible.
 
-### Development
+## Development
 
 Pull requests are encouraged and often welcome. [Pick an issue](https://github.com/row-engineering/ai-audio/issues) or a feature and help us out!
 
@@ -57,14 +57,25 @@ cd /path/to/wordpress/wp-content/plugins
 git clone https://github.com/row-engineering/ai-narration.git
 cd ai-narration
 ```
+### PR Guidelines
 
+We are a small team and reviews may not be timley. We also have a narrow focus for this plugin as it actively runs on our site - mostly on security, stability, and improving existing features. We are not looking to add significant features without consultation. With that in mind:
+
+1. Keep It Focused and Atomic: Small PRs please.
+2. Write a Comprehensive PR Description
+- What does this PR solve or introduce?
+- How did you solve it?
+- Any potential side effects or considerations?
+3. Meaningful Commit Messages
+4. Tests: Include tests or detailed documentation
+  
 ## Questions
 
 Questions are one way to get answers.
 
 ## Hooks
 
-### ain_script_src
+#### ain_script_src
 
 The plugin loads `js/ain-public.js` on single posts that have a narration index. Developers can swap that file using a filter.
 
@@ -72,14 +83,14 @@ Basic override example (from a theme or mu plugin):
 
 ```
 add_filter('ain_script_src', function ($src, $post) {
-return get_stylesheet_directory_uri() . '/js/ain-narration-custom.js';
+  return get_stylesheet_directory_uri() . '/js/ain-narration-custom.js';
 }, 10, 2);
 ```
 
 Return a full URL to your custom script. Return an empty string to skip loading.
 
 
-### ain_styles_src
+#### ain_styles_src
 
 The plugin loads `css/ain-public.css` on single posts that have a narration index. Developers can swap that file using a filter.
 
@@ -87,7 +98,7 @@ Basic override example (from a theme or mu plugin):
 
 ```
 add_filter('ain_script_src', function ($src, $post) {
-return get_stylesheet_directory_uri() . '/css/ain-narration-custom.css';
+  return get_stylesheet_directory_uri() . '/css/ain-narration-custom.css';
 }, 10, 2);
 ```
 
