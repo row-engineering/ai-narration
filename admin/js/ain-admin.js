@@ -22,19 +22,26 @@ document.addEventListener('DOMContentLoaded', function () {
 		return formData.toString();
 	}
 
-	async function generateNarration(postIDs) {
+	function updateStatus(message){
+		const el = document.getElementById('ain-status') || false
+		if (el) { el.innerText = message || ' ' }
+	}
+
+	async function generateNarration(posts) {
 		if (!window.sup) {
 			window.sup = {}
 		}
-		postIDs.forEach(postID => getStatusUpdates(postID))
+
+		const postIDs = posts.map(post => post.id);
+		postIDs.forEach(postID => getStatusUpdates(postID));
 
 		try {
 			const response = await fetch(ajaxurl, {
 				...fetchConfig,
 				body: serializeData({
-					action: 'generate_narration',
+					action:  'generate_narration',
 					post_ids: postIDs,
-					nonce: narrationAdmin.nonce
+					nonce:    narrationAdmin.nonce
 				})
 			});
 			const data = await response.json()
@@ -60,13 +67,19 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	async function deleteNarration(postIDs) {
+
+		const text = (postIDs.length > 1) ? postIDs.length + ' narrations' : 'this'
+		if (!confirm(`Are you sure you want to delete ${text}?`) ) {
+			return
+		}
+
 		try {
 			const response = await fetch(ajaxurl, {
 				...fetchConfig,
 				body: serializeData({
-					action: 'delete_narration',
+					action:  'delete_narration',
 					post_ids: postIDs,
-					nonce: narrationAdmin.nonce
+					nonce:    narrationAdmin.nonce
 				})
 			});
 			const data = await response.json();
@@ -82,49 +95,53 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	function getStatusUpdates(postID) {
+
 		const btn = document.querySelector(`.generate-narration[data-post-id="${postID}"]`)
-		const postRow = btn.closest('tr')
-		const postLink = postRow.querySelector('td.column-title a')
-		const postURL = postLink.href
-		const postPath = postURL.replace(location.origin, '').replace(/^\/|\/$/g, '')
+		const postPath = btn.dataset.postYear + '/' + btn.dataset.postName
 
 		const maxTime = 10 * 60 * 1000 // 10 min
 		let attempts = 0
 
 		btn.innerHTML = 'Generating...'
+		updateStatus(`Starting...`)
 
 		sup[postID] = setInterval(() => {
 			attempts++
 			if (attempts * 3000 > maxTime) {
 				stopChecking(postID, 'Generation timed out')
+				updateStatus(`Error: Timed out`)
 			}
 
+		//	TODO: Hardcoded dir 'narrations'
 			fetch(`/wp-content/narrations/${postPath}/index.json`)
-			.then(response => {
-				if (response.ok) {
-					return response.json()
-				}
-				return false
-			})
-			.then(data => {
-				if (data.audio) {
-					const totalTracks = data.audio.total
-					const tracksGenerated = data.audio.tracks.length
-	
-					if (tracksGenerated < totalTracks) {
-						updateBtnText(postID, `Generating ${tracksGenerated}/${totalTracks}...`)
-					} else {
-						stopChecking(postID, 'Generated!')
+				.then(response => {
+					if (response.ok) {
+						return response.json()
+					}
+					return false
+				})
+				.then(data => {
+					if (data.audio) {
+						const totalTracks = data.audio.total
+						const tracksGenerated = data.audio.tracks.length
+		
+						if (tracksGenerated < totalTracks) {
+							updateBtnText(postID, `Generating ${tracksGenerated}/${totalTracks}...`)
+							updateStatus(`Track ${tracksGenerated}/${totalTracks}...`)
+						} else {
+							stopChecking(postID, 'Generated!')
+							updateStatus()
+						}
+					}
+				})
+				.catch(error => {
+					console.error('Error checking audio generation progress', error)
+					updateStatus(`Processing... (${attempts} of 10)`)
+					if (attempts > 10) {
+						stopChecking(postID, 'Generation error')
 					}
 				}
-			})
-			.catch(error => {
-				console.error('Error checking audio generation progress', error)
-				if (attempts > 10) {
-					stopChecking(postID, 'Generation error')
-				}
-			}
-		)
+			)
 		}, 3000)
 	}
 
@@ -184,9 +201,13 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	function addEventsPageNarrations() {
+
 		document.querySelectorAll('.generate-narration').forEach(button => {
 			button.addEventListener('click', function () {
-				generateNarration([this.dataset.postId])
+				generateNarration( [{
+					id:   this.dataset.postId,
+					name: this.dataset.postSlug
+				}] )
 			});
 		});
 
@@ -196,23 +217,40 @@ document.addEventListener('DOMContentLoaded', function () {
 			});
 		});
 
-		document.getElementById('bulk-generate').addEventListener('click', function () {
-			const selectedPosts = Array.from(document.querySelectorAll('input[name="post[]"]:checked'))
-				.map(checkbox => checkbox.value)
-
-			if (selectedPosts.length > 0) {
-				generateNarration(selectedPosts)
+		document.getElementById('bulk-apply').addEventListener('click', function () {
+			const selectEl = document.getElementById('bulk-action-selector') || false
+			if (selectEl) {
+				switch (selectEl.value) {
+					case 'generate':
+						bulkGenerateNarrations()
+						break
+					case 'delete':
+						bulkDeleteNarrations()
+						break
+				}
+				selectEl.value = -1
 			}
 		})
+	}
 
-		document.getElementById('bulk-delete').addEventListener('click', function () {
-			const selectedPosts = Array.from(document.querySelectorAll('input[name="post[]"]:checked'))
-				.map(checkbox => checkbox.value)
+	function bulkGenerateNarrations() {
+		const selectedPosts = Array.from(document.querySelectorAll('input[name="post[]"]:checked'))
+			.map(checkbox => ({
+				id:   checkbox.value,
+				name: checkbox.getAttribute('data-post-name')
+			})
+		)
+		if (selectedPosts.length > 0) {
+			generateNarration(selectedPosts)
+		}
+	}
 
-			if (selectedPosts.length > 0) {
-				deleteNarration(selectedPosts)
-			}
-		});
+	function bulkDeleteNarrations() {
+		const selectedPosts = Array.from(document.querySelectorAll('input[name="post[]"]:checked'))
+			.map(checkbox => checkbox.value)
+		if (selectedPosts.length > 0) {
+			deleteNarration(selectedPosts)
+		}
 	}
 
 	function init() {
@@ -225,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				addEventsPageNarrations()
 				break
 			default:
-				console.log("no match")
+				console.log("No page match")
 		}
 	}
 
