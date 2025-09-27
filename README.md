@@ -2,6 +2,42 @@
 
 A WordPress plugin to enable AI-generated audio of posts, to boost accessibility, engagement, and reach.
 
+## Instalation
+
+1) Install the plugin
+- In WordPress admin go to Plugins > Add New > Upload Plugin
+- Choose the plugin zip and click Install Now
+- Click Activate
+
+2) Confirm it is active
+- You should see it listed under Plugins as Active
+- A new settings page will appear under Settings or in the left menu
+
+### Minimum setup in Settings
+
+1) Choose the service
+Select your TTS or narration service from the dropdown.
+For now Open AI is the only one supported
+
+2) Add API key
+Paste the key for the chosen service. Save.
+
+3) Choose a Voice
+The most commons ones known for each service are listed.
+
+4) Base directory
+Confirm the base directory where narration assets will be stored or read from. Adjust if your site uses a custom path.
+
+5) Post content selector
+The default selector is `.entry-content` and works with default themes. If your post is a custom template this might have been changed. If so you need to provide it here.
+
+
+That’s all you need for a basic run. Create or view a single post that has a narration index and the script will load.
+
+Full explanations for all settings will be added later.
+
+
+
 ## Supporting AI Narration
 
 AI Narration is an open source project with its ongoing development made possible entirely by the engineering team at Rest of World - and potentially others in the future. If you'd like to support these efforts, please consider donation which will also help support our global journalism efforts:
@@ -22,8 +58,6 @@ git clone https://github.com/row-engineering/ai-narration.git
 cd ai-narration
 ```
 
-Go to the Plugins page in the WordPress dashboard to activate.
-
 ## Questions
 
 Questions are one way to get answers.
@@ -38,7 +72,7 @@ Basic override example (from a theme or mu plugin):
 
 ```
 add_filter('ain_script_src', function ($src, $post) {
-    return get_stylesheet_directory_uri() . '/js/ain-narration-custom.js';
+return get_stylesheet_directory_uri() . '/js/ain-narration-custom.js';
 }, 10, 2);
 ```
 
@@ -53,7 +87,7 @@ Basic override example (from a theme or mu plugin):
 
 ```
 add_filter('ain_script_src', function ($src, $post) {
-    return get_stylesheet_directory_uri() . '/css/ain-narration-custom.css';
+return get_stylesheet_directory_uri() . '/css/ain-narration-custom.css';
 }, 10, 2);
 ```
 
