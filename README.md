@@ -5,9 +5,9 @@ A WordPress plugin to enable AI-generated audio of posts, to boost accessibility
 ## Instalation
 
 1) Install the plugin
-- In WordPress admin go to Plugins > Add New > Upload Plugin
-- Choose the plugin zip and click Install Now
-- Click Activate
+- In WordPress admin go to _Plugins > Add New > Upload Plugin_
+- Choose the plugin zip and click _Install Now_
+- Click _Activate_
 
 2) Confirm it is active
 - You should see it listed under Plugins as Active
