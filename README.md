@@ -43,3 +43,18 @@ add_filter('ain_script_src', function ($src, $post) {
 ```
 
 Return a full URL to your custom script. Return an empty string to skip loading.
+
+
+### ain_styles_src
+
+The plugin loads `css/ain-public.css` on single posts that have a narration index. Developers can swap that file using a filter.
+
+Basic override example (from a theme or mu plugin):
+
+```
+add_filter('ain_script_src', function ($src, $post) {
+    return get_stylesheet_directory_uri() . '/css/ain-narration-custom.css';
+}, 10, 2);
+```
+
+Return a full URL to your custom stylesheet. Return an empty string to skip loading.
