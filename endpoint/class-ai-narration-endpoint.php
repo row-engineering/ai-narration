@@ -1,11 +1,11 @@
 <?php
 
-if (!function_exists('wp_read_audio_metadata')) {
-	require_once(ABSPATH . 'wp-admin/includes/media.php');
-}
-
 if ( ! defined( 'WPINC' ) ) {
 	die;
+}
+
+if (!function_exists('wp_read_audio_metadata')) {
+	require_once(ABSPATH . 'wp-admin/includes/media.php');
 }
 
 class AI_Narration_Endpoint {
