@@ -28,11 +28,11 @@ class Posts_Narration_List_Table extends WP_List_Table {
 
 		// Get posts from last two weeks
 		$args = array(
-			'post_type' => 'post',
+			'post_type'   => 'post',
 			'post_status' => 'publish',
-			'date_query' => array(
+			'date_query'  => array(
 				array(
-					'after' => '2024-11-01'
+					'after' => '2023-01-01'
 				)
 			),
 			'posts_per_page' => -1
@@ -44,9 +44,9 @@ class Posts_Narration_List_Table extends WP_List_Table {
 
 	public function get_columns() {
 		return array(
-			'cb' => '<input type="checkbox" />',
-			'title' => 'Post Title',
-			'date' => 'Published Date',
+			'cb'      => '<input type="checkbox" />',
+			'title'   => 'Post Title',
+			'date'    => 'Published',
 			'actions' => 'Actions'
 		);
 	}
@@ -78,8 +78,10 @@ class Posts_Narration_List_Table extends WP_List_Table {
 		$has_narration = file_exists($index_file);
 
 		$generate_button = sprintf(
-			'<button type="button" class="button action generate-narration" data-post-id="%d">%s</button>',
+			'<button type="button" class="button action generate-narration" data-post-id="%d" data-post-name="%s" data-post-year="%d">%s</button>',
 			$post->ID,
+			$post->post_name,
+			get_the_date('Y', $post->ID),
 			$has_narration ? 'Regenerate' : 'Generate'
 		);
 
