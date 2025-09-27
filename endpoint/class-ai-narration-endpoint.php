@@ -175,14 +175,12 @@ class AI_Narration_Endpoint {
 				$post_data = file_get_contents('php://input');
 				file_put_contents('last-request-post.txt', $post_data);
 			}
-
 			if (strpos($post_data, AI_NARRATION_KEY) !== false) {
 				$data = json_decode($post_data, true);
 				unset($data['key']);
 			} else {
 				$this->apply_response_and_exit(403, 'Forbidden.');
 			}
-
 		} else {
 			$this->apply_response_and_exit(405, 'Method Not Allowed. Only POST requests are supported.');
 		}
