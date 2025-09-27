@@ -119,5 +119,8 @@ add_filter('ain_script_src', function ($src, $post) {
   return get_stylesheet_directory_uri() . '/css/ain-narration-custom.css';
 }, 10, 2);
 ```
+## Change Log
 
+[View the change log](https://github.com/row-engineering/ai-narration/blob/master/CHANGELOG.md).
 Return a full URL to your custom stylesheet. Return an empty string to skip loading.
+
