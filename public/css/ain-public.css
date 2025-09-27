@@ -64,6 +64,8 @@
 
 .ain-player button {
 	cursor: pointer;
+	background-color: transparent;
+	border: 0;
 }
 
 .ain-player button:focus {
