@@ -30,6 +30,18 @@ define( 'AI_NARRATION_VERSION', '1.1.6' );
 
 define( 'AI_NARRATION_BASENAME', plugin_basename( __FILE__ ) );
 
+/**
+ * Creates a unique verification token to prevent unauthorized API responses.
+ * Narration generation can fail if this changes mid-request but that should be very very rare.
+ */
+function ain_get_secret_key() {
+	$k = get_transient('ain_secret_key');
+	if ($k) return $k;
+	$k = bin2hex(random_bytes(32));
+	set_transient('ain_secret_key', $k, DAY_IN_SECONDS * 14);
+	return (string) $k;
+}
+
 include_once dirname(__FILE__) . '/configuration.php';
 
 /**
