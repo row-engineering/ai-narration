@@ -12,7 +12,6 @@
  * @subpackage AI_Narration/admin/partials
  */
 
-
 $table = new Posts_Narration_List_Table();
 $table->prepare_items();
 
