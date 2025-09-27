@@ -322,7 +322,7 @@ class AI_Narration_Public {
 			}
 		} else {
 			$response = array(
-				'status' => 6,
+				'status'  => 6,
 				'message' => 'Post must be newly published.'
 			);
 		}
