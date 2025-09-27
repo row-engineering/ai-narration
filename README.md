@@ -27,3 +27,19 @@ Go to the Plugins page in the WordPress dashboard to activate.
 ## Questions
 
 Questions are one way to get answers.
+
+## Hooks
+
+### ain_script_src
+
+The plugin loads `js/ain-public.js` on single posts that have a narration index. Developers can swap that file using a filter.
+
+Basic override example (from a theme or mu plugin):
+
+```
+add_filter('ain_script_src', function ($src, $post) {
+    return get_stylesheet_directory_uri() . '/js/ain-narration-custom.js';
+}, 10, 2);
+```
+
+Return a full URL to your custom script. Return an empty string to skip loading.

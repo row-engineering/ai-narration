@@ -691,9 +691,13 @@ class AI_Narration_Public {
 		if (!is_single()) return;
 
 		$has_narration = $this->get_index_file($post);
-		if ( $has_narration ) {
-			wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ain-public.js', array(), $this->version, false );
-		}
+		if (!$has_narration) return;
+
+		$src = plugin_dir_url(__FILE__) . 'js/ain-public.js';
+		$src = apply_filters('ain_script_src', $src, $post);
+		if (!$src) return;
+
+		wp_enqueue_script( $this->plugin_name, $src, array(), $this->version, false );
 	}
 
 	public function enqueue_svg_sprite() {
