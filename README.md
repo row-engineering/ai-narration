@@ -22,15 +22,15 @@ This plugin is actively used and maintained by [Rest of World](https://restofwor
 
 ## Key Features
 
-- OpenAI Text-to-Speech integration with multiple voice options
-- Responsive audio player that works on all devices
-- Flexible generation - Create narrations manually or automatically on post publish
-- Bulk narration generation for existing content
-- Customizable intro/outro messages for each narration
-- Developer-friendly with hooks and filters for customization
-- Local hosting - Audio files stored on your server (no third-party dependencies for playback)
+- **TTS** - OpenAI Text-to-Speech integration with multiple voice options
+- **Fully functioal player** - Responsive audio player that works on all devices
+- **Flexible generation** - Create narrations manually or automatically on post publish
+- **Bulk Action** - Bulk narration generation for existing content
+- **Customizable** - Custom intro/outro messages for each narration
+- **Extensibility** - Developer-friendly with hooks and filters for customization
+- **Local hosting** - Audio files stored on your server (no third-party dependencies for playback)
 
-## Instalation
+## Installation
 
 - In WordPress admin go to _Plugins > Add New > Upload Plugin_
 - Choose the plugin zip and click _Install Now_
@@ -43,7 +43,7 @@ Go to the plugin settings page.
 
 - **Choose service:** Select "OpenAI" (currently the only option)
 - **Add API key:** Paste your OpenAI API key and save
-- **Select voice:** Choose from available OpenAI voices
+- **Select voice:** Choose from available voices
 - **Post content selector:** Default is `.entry-content` - change this if your theme uses different markup
 
 Click _Update_ to save changes
@@ -97,9 +97,9 @@ We are a small team and reviews may not be timley. We also have a narrow focus f
 ### Contribution guidelines:
 
 - Keep PRs focused and atomic
-- Include comprehensive descriptions
+- Include comprehensive but relevent descriptions
 - Add tests or detailed documentation
-- Follow existing code standards
+- Follow existing code and formatting standards (tabs, not spaces)
 
 Pull requests are encouraged and often welcome. [Pick an issue](https://github.com/row-engineering/ai-audio/issues) or a feature and help us out!
 
