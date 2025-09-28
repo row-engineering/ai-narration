@@ -7,15 +7,18 @@
 			this.articleEl     = articleEl
 			this.data          = ainData
 			this.config        = this.data.config
-			this.selector      = this.data.selector
+			this.selector      = this.data.config.selector
+			this.position      = this.data.config.position
+
 			this.files         = this.data.audio.tracks
 			this.durations     = this.data.audio.duration
+
 			this.loadIdx       = 0      // which audio file are we loading?
 			this.playIdx       = 0      // which audio file are we playing?
 			this.bufferedTime  = this.files.map(f => { return 0 })    // tracking buffered time for all files
 			this.playedTime    = this.files.map(f => { return 0 })    // tracking played time for all files
 			this.totalPlay     = 0      // combining played time for all files
-			this.totalDuration = this.durations.reduce((total,num) => total + num, 0)
+			this.totalDuration = this.durations.reduce((total, num) => total + num, 0)
 
 			this.insertPlayer()
 			this.saveSelectors()
@@ -35,15 +38,33 @@
 
 		insertPlayer() {
 			const paragraphs = this.articleEl.querySelectorAll('p')
-			
-			let insertionPt
-			let charCount = 0
-			for (const p of paragraphs) {
-				if (charCount < 180) {
-					charCount += p.textContent.length
-					insertionPt = p
-				} else {
-					break
+			let insertionPt = null
+
+		//	Top of Post
+			if (this.position[0] === 'top') {
+				paragraphs[0].insertAdjacentHTML('beforebegin', this.playerMarkup(true))
+				return
+			}
+
+		//	Paragraph Count
+			if (this.position[0] === 'p') {
+				const paraCount = (this.position[1] > 0 ) ? this.position[1] - 1 : 0
+				if (paragraphs[paraCount]) {
+					insertionPt = paragraphs[paraCount]
+				}
+			}
+
+		//	Word Count
+			if (this.position[0] === 'w') {
+				const wordCount = this.position[1]
+				let charCount = 0
+				for (const p of paragraphs) {
+					if (charCount < wordCount) {
+						charCount += p.textContent.length
+						insertionPt = p
+					} else {
+						break
+					}
 				}
 			}
 
@@ -54,9 +75,9 @@
 
 		playerMarkup() {
 			let learnMoreLink = ''
-			if (this.config && this.config.learnMoreLink) {
+			if (this.config && this.config.link) {
 				learnMoreLink = `
-					<a class="ain-player__about" href="${this.config.learnMoreLink}" target="_blank">Learn more</a>
+					<a class="ain-player__about" href="${this.config.link}" target="_blank">Learn more</a>
 				`
 			}
 			return `
