@@ -9,7 +9,7 @@ if ($menu_nested) {
 $submenu_html = '';
 foreach($this->pages as $key => $page) {
 	$activeClass = ($page_name === $key) ? ' is-active' : '';
-	$submenu_html .= implode("", array(
+	$submenu_html .= implode('', array(
 		"\n<a class=\"ain-tab {$activeClass}\" href=\"/wp-admin/{$page_type}?page={$this->plugin_name}-{$key}\">",
 			"{$page['title']}",
 		"</a>"
@@ -17,10 +17,6 @@ foreach($this->pages as $key => $page) {
 }
 
 ?>
-<style>
-
-
-</style>
 
 <div class="ain-admin-page">
 
