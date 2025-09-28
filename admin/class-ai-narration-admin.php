@@ -326,6 +326,7 @@ class AI_Narration_Admin {
 					'label'   => 'Cut-Off Date',
 					'section' => 'ai_narration_exclusions',
 					'type'    => 'text',	// TO DO: date field
+          'default' => date('Y-m-d', strtotime('-30 days')),
 					'supplemental' => 'Posts published before this date (<i>YYYY-MM-DD</i>) will not be narrated.',
 				),
 
@@ -512,14 +513,11 @@ class AI_Narration_Admin {
 			wp_send_json_error('Unauthorized');
 		}
 
-		$post_ids = $_POST['post_ids'];
+		global $plugin_public;
 
+		$post_ids = $_POST['post_ids'];
 		foreach ($post_ids as $post_id) {
 			$post = get_post($post_id);
-
-			$plugin = new AI_Narration();
-			$plugin_public = new AI_Narration_Public( $plugin->get_plugin_name(), $plugin->get_version() );
-
 			$response = $plugin_public->request_new_audio('publish', 'draft', $post);
 
 			if ($response['status'] === 200) {

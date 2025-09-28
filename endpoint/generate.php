@@ -22,11 +22,12 @@ if (!$post) {
 	return;
 }
 
+global $plugin_public;
+
 $plugin        = new AI_Narration();
 $plugin_public = new AI_Narration_Public( $plugin->get_plugin_name(), $plugin->get_version() );
-
 $response      = $plugin_public->request_new_audio('publish', 'draft', $post);
 
-echo '<pre style="white-space: break-spaces">';
-var_dump(json_encode($response));
-echo '</pre>';
+// echo '<pre style="white-space: break-spaces">';
+// var_dump(json_encode($response));
+// echo '</pre>';

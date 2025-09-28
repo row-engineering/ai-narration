@@ -26,13 +26,15 @@ class Posts_Narration_List_Table extends WP_List_Table {
 
 		$this->_column_headers = array($columns, $hidden, $sortable);
 
-		// Get posts from last two weeks
+		global $plugin_public;
+		$cutoff_date = $plugin_public->get_cutoff_date();
+
 		$args = array(
 			'post_type'   => 'post',
 			'post_status' => 'publish',
 			'date_query'  => array(
 				array(
-					'after' => '2023-01-01'
+					'after' => $cutoff_date
 				)
 			),
 			'posts_per_page' => -1
@@ -51,14 +53,14 @@ class Posts_Narration_List_Table extends WP_List_Table {
 		);
 	}
 
-	public function column_cb($item) {
+	protected function column_cb($item) {
 		return sprintf(
 			'<input type="checkbox" name="post[]" value="%s" />',
 			$item->ID
 		);
 	}
 
-	public function column_title($item) {
+	protected function column_title($item) {
 		return sprintf(
 			'<a href="%s" target="_blank">%s</a>',
 			get_permalink($item->ID),
@@ -66,11 +68,11 @@ class Posts_Narration_List_Table extends WP_List_Table {
 		);
 	}
 
-	public function column_date($item) {
+	protected function column_date($item) {
 		return get_the_date('', $item->ID);
 	}
 
-	public function column_actions($post) {
+	protected function column_actions($post) {
 		$date = DateTime::createFromFormat('Y-m-d H:i:s', $post->post_date);
 		$year = $date->format('Y');
 		$slug = $post->post_name;
@@ -91,5 +93,19 @@ class Posts_Narration_List_Table extends WP_List_Table {
 		) : '';
 
 		return $generate_button . ' ' . $delete_button;
+	}
+
+	public function single_row($item) {
+		$date = DateTime::createFromFormat('Y-m-d H:i:s', $item->post_date);
+		$year = $date->format('Y');
+		$slug = $item->post_name;
+		
+		echo sprintf(
+			'<tr data-slug="%s" data-year="%s">',
+			esc_attr($slug),
+			esc_attr($year)
+		);
+		$this->single_row_columns($item);
+		echo '</tr>';
 	}
 }
