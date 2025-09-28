@@ -29,6 +29,7 @@ foreach($this->pages as $key => $page) {
 				</a>
 				<h2>AI Narrations</h2>
 				<?= $submenu_html; ?>
+				<a class="ain-tab external" href="https://github.com/row-engineering/ai-narration/blob/main/README.md" target="_blank">Documentation</a>
 			</div>
 			<div class="ain-nav-promo-wrap">
 				<a href="https://restofworld.org/?utm_source=acf_plugin&amp;utm_medium=referral&amp;utm_campaign=bx_prod_referral&amp;utm_content=acf_pro_plugin_topbar_logo" target="_blank" class="ain-nav-row-logo">

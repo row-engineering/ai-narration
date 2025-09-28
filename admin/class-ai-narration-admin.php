@@ -33,9 +33,6 @@ class AI_Narration_Admin {
 			),
 			'narrations' => array(
 				'title' => 'Narrations',
-			),
-			'documentation' => array(
-				'title' => 'Documentation'
 			)
 		);
 
