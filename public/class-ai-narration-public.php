@@ -407,6 +407,9 @@ class AI_Narration_Public {
 		$current_group = 0;
 		$current_text  = '';
 
+	//	TODO: Add 'limit' for OpenAI to the cofniguration
+	//	TODO: Add settings and hook to set a custom character count (within a services limit)
+
 		$max_words  = 2000;
 		$max_chars  = 4096;	// OpenAI limit
 
@@ -420,7 +423,10 @@ class AI_Narration_Public {
 							$block_words = str_word_count($block_content);
 							$block_chars = strlen($block_content);
 
-							/* The first MP3 file should be a smaller filesize and therefore shorter */
+							/* 
+							The first MP3 file should be a smaller filesize and therefore shorter.
+							This is so it can load faster, after that preloading larger files is easy
+							*/
 							$len = ($current_group === 0) ? 600 : $max_words;
 
 							if (str_word_count($current_text) + $block_words > $len || strlen($current_text) + $block_chars > $max_chars) {
@@ -567,20 +573,38 @@ class AI_Narration_Public {
 
 		if ( !is_single() ) return;
 
+		$player_pos_type = get_option('ai_player_pos_type');
+		if (!empty($player_pos_type) && isset($player_pos_type[0])) {
+			$player_pos_type = $player_pos_type[0];
+			if ($player_pos_type === 'n') {
+				return;
+			}
+		}
+
 		$this->get_post_info();
 		$post_eligibility = $this->is_post_eligible();
+
 		if ( $post_eligibility['status'] === 200 ) {
 			if ( $index_file = $this->get_index_file($this->post) ) {
 				$narration_json = file_get_contents($index_file);
 				$narration_data = json_decode($narration_json, true);
 				if ( $narration_data['audio']['total'] === count($narration_data['audio']['tracks']) ) {
+
+					$cdn              = get_option('ai_cdn');
+					$player_pos_value = get_option('ai_player_pos_value');
+					if (empty($player_pos_value)) {
+						$player_pos_value = 0;
+					}
+
 					$narration_data['config'] = array(
-						'cdn'           => trim(get_option('cdn'), '/'),
-						'learnMoreLink' => get_option('learn_more_link'),
-						'selector'      => $this->get_post_selector()
+						'cdn'      => trim($cdn, '/'),
+						'link'     => get_option('ai_learn_link'),
+						'selector' => $this->get_post_selector(),
+						'position' => array( $player_pos_type, $player_pos_value )
 					);
+
 					$narration_json = json_encode($narration_data);
-					echo "<script id='ai-narration-data'>window.AINarrationData = $narration_json</script>";
+					echo "\n<script id='ai-narration-data'>\nwindow.AINarrationData = $narration_json\n</script>\n";
 				}
 			}
 		}
