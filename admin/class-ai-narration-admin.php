@@ -56,7 +56,7 @@ class AI_Narration_Admin {
 		add_action('wp_ajax_nopriv_tag_lookup',  array( $this, 'tag_lookup'));
 
 		// Posts/Narrations admin callbacks
-		add_action('wp_ajax_generate_narration',  array( $this, 'handle_generate_narration'));
+		add_action('wp_ajax_generate_narration', array( $this, 'handle_generate_narration'));
 		add_action('wp_ajax_delete_narration',   array( $this, 'handle_delete_narration'));
 	}
 
@@ -94,7 +94,7 @@ class AI_Narration_Admin {
 		}
 	}
 
-	/*********************************************** SETTINGS PAGE ***********************************************/
+	/*** SETTINGS PAGE ***/
 
 	public function plugin_settings_page_content() {
 		$page_name = str_replace("{$this->plugin_name}-", '', $_GET["page"]);
@@ -120,13 +120,16 @@ class AI_Narration_Admin {
 		);
 
 		$args['section_class'] = 'service';
-		add_settings_section( 'ai_narration_service',  'Service',   array( $this, 'section_callback' ),  'ain-settings',  $args );
+		add_settings_section( 'ai_narration_service',  'Service', array( $this, 'section_callback' ),  'ain-settings',  $args );
 
 		$args['section_class'] = 'features';
-		add_settings_section( 'ai_narration_features',   'Features',  array( $this, 'section_callback' ),  'ain-settings',  $args );
+		add_settings_section( 'ai_narration_features', 'Features', array( $this, 'section_callback' ),  'ain-settings',  $args );
 
 		$args['section_class'] = 'front-end-config';
-		add_settings_section( 'ai_narration_frontend',   'Front-End',  array( $this, 'section_callback' ),  'ain-settings',  $args );
+		add_settings_section( 'ai_narration_player',  'Player', array( $this, 'section_callback' ),  'ain-settings',  $args );
+
+		$args['section_class'] = 'front-end-config';
+		add_settings_section( 'ai_narration_frontend',  'Front-End', array( $this, 'section_callback' ),  'ain-settings',  $args );
 
 		$args['section_class'] = 'exclusions';
 		add_settings_section( 'ai_narration_exclusions', 'Processing &amp; Eligibility', array( $this, 'section_callback' ),  'ain-settings', $args );
@@ -138,13 +141,13 @@ class AI_Narration_Admin {
 	public function section_callback( $arguments ) {
 		switch( $arguments['id'] ){
 			case 'ai_narration_service':
-				echo 'Currently the only available service is <a href="https://platform.openai.com/docs/guides/text-to-speech?lang=node" target="_blank">OpenAI TTS</a>';
+				echo 'Currently the only available service is <a href="https://platform.openai.com/docs/guides/text-to-speech?lang=node" target="_blank">OpenAI TTS</a>.';
 				break;
-			// case 'ai_narration_features':
-			// 	echo 'Currently the only available service is <a href="https://platform.openai.com/docs/guides/text-to-speech?lang=node" target="_blank">OpenAI TTS</a>';
-			// 	break;
+			case 'ai_narration_player':
+				echo 'Control the player position by specifying the paragraph after which it should be inserted, or after a paragraph once a certain word count has been reached.';
+				break;
 			case 'ai_narration_exclusions':
-				echo 'Manage which Posts, and under what conditions, they qualify for a narration';
+				echo 'Manage which Posts, and under what conditions, they qualify for a narration.';
 				break;
 		}
 	}
@@ -169,7 +172,7 @@ class AI_Narration_Admin {
 		$pages = array(
 			'ain-settings' => array(
 
-				/*	Section: Service */
+				/*	Section: TTS Services */
 
 				array(
 					'uid'     => 'ai_narration_service_vendor',
@@ -179,6 +182,7 @@ class AI_Narration_Admin {
 					'options' => $ai_narration_services,
 					'default' => array('none')
 				),
+
 				array(
 					'uid'     => 'ai_narration_service_api_key',
 					'label'   => 'API Key',
@@ -186,6 +190,7 @@ class AI_Narration_Admin {
 					'type'    => 'password',
 					'supplemental' => 'API keys should not be shared',
 				),
+
 				array(
 					'uid'     => 'ai_narration_voice',
 					'label'   => 'Narration Voice',
@@ -197,8 +202,6 @@ class AI_Narration_Admin {
 
 				/*	Section: Features */
 
-				// TO DO: select which block types to narration? Paragraph & pullquote by default
-
 				array(
 					'uid'     => 'ai_narration_auto_generate',
 					'label'   => 'Auto-Generate on Publish',
@@ -206,6 +209,7 @@ class AI_Narration_Admin {
 					'type'    => 'checkbox',
 					'default' => false
 				),
+
 				array(
 					'uid'     => 'ai_narration_intro_text',
 					'label'   => 'Introduction Text',
@@ -214,6 +218,7 @@ class AI_Narration_Admin {
 					'supplemental' => 'Available variables: <code>%Headline%</code> <code>%Authors%</code> <code>%Date%</code><br>Not case-sensitive.',
 					'default' => '%headline% by %authors%. Published %date%. Narrated by AI.'
 				),
+
 				array(
 					'uid'     => 'ai_narration_outro_text',
 					'label'   => 'Outro Text',
@@ -222,12 +227,14 @@ class AI_Narration_Admin {
 					'type'    => 'textarea',
 					'default' => false
 				),
+
 				array(
 					'uid'     => 'ai_narration_intro_mp3',
 					'label'   => 'Intro MP3 File Path',
 					'section' => 'ai_narration_features',
 					'type'    => 'text',
 				),
+
 				array(
 					'uid'     => 'ai_narration_outro_mp3',
 					'label'   => 'Outro MP3 File Path',
@@ -235,7 +242,8 @@ class AI_Narration_Admin {
 					'type'    => 'text',
 				),
 
-				// TO DO: how to handle this value changing? move all previous files?
+				// TODO: how to handle this value changing? move all previous files?
+
 				// array(
 				// 	'uid'     => 'ai_narration_base_dir',
 				// 	'label'   => 'Base Directory Name',
@@ -244,6 +252,30 @@ class AI_Narration_Admin {
 				// 	'default' => 'narrations',
 				// 	'supplemental' => 'Directory structure: <code>/wp-content/&lt;DIRECTORY-NAME&gt;/&lt;YEAR&gt;/&lt;POST-NAME&gt;/</code>.<br>Warning: Changing this later has consequences. <a href="#" target="_blank">Learn more</a>.'
 				// ),
+
+				/*	Section: Player */
+
+				array(
+					'uid'     => 'ai_player_pos_type',
+					'label'   => 'Placement',
+					'section' => 'ai_narration_player',
+					'type'    => 'select',
+					'options' => array(
+						'top' => 'Top of story',
+						'w'   => 'By word count',
+						'p'   => 'By paragraph',
+						'n'   => 'None - disable player'
+					),
+					'default' => array('w')
+				),
+
+				array(
+					'uid'     => 'ai_player_pos_value',
+					'label'   => 'Position',
+					'section' => 'ai_narration_player',
+					'type'    => 'text',
+					'default' => 180,
+				),
 
 				/*	Section: Front-End Config */
 
@@ -256,7 +288,7 @@ class AI_Narration_Admin {
 				),
 
 				array(
-					'uid'     => 'learn_more_link',
+					'uid'     => 'ai_learn_link',
 					'label'   => 'Learn More Link',
 					'section' => 'ai_narration_frontend',
 					'type'    => 'text',
@@ -264,7 +296,7 @@ class AI_Narration_Admin {
 				),
 
 				array(
-					'uid'     => 'cdn',
+					'uid'     => 'ai_cdn',
 					'label'   => 'CDN',
 					'section' => 'ai_narration_frontend',
 					'type'    => 'text',
@@ -297,14 +329,6 @@ class AI_Narration_Admin {
 					'supplemental' => 'Posts published before this date (<i>YYYY-MM-DD</i>) will not be narrated.',
 				),
 
-				// array(
-				// 	// 'uid'     => 'ai_narration_wc_limit_min',
-				// 	'label'   => 'Word Limits',
-				// 	'section' => 'ai_narration_exclusions',
-				// 	'type'    => 'heading',
-				// 	'supplemental' => 'Posts below the minimum, or above the maximum, word count will be skipped.'
-				// ),
-
 				array(
 					'uid'     => 'ai_narration_wc_limit_min',
 					'label'   => 'Minimum Words',
@@ -323,8 +347,6 @@ class AI_Narration_Admin {
 				),
 
 				/*	Section: Preferences */
-
-				// TO DO: select which block types to narration? Paragraph & pullquote by default
 
 				array(
 					'uid'     => 'ai_narration_menu_nested',
@@ -481,7 +503,7 @@ class AI_Narration_Admin {
 		die();
 	}
 
-	/********************************************** NARRATIONS PAGE **********************************************/
+	/*** NARRATIONS PAGE ***/
 
 	public function handle_generate_narration() {
 		check_ajax_referer('narration_nonce', 'nonce');
@@ -542,36 +564,13 @@ class AI_Narration_Admin {
     return rmdir($directory);
 	}
 
-	/************************************************** GENERAL **************************************************/
+	/*** GENERAL ***/
 
 	public function enqueue_styles() {
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in AI_Narration_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The AI_Narration_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ain-admin.css', array(), $this->version, 'all' );
 	}
 
 	public function enqueue_scripts() {
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in AI_Narration_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The AI_Narration_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
 		wp_enqueue_script('suggest');
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ain-admin.js', array(), $this->version, false );
 		wp_localize_script( $this->plugin_name, 'narrationAdmin', array( 'nonce' => wp_create_nonce('narration_nonce') ) );
