@@ -194,10 +194,27 @@ document.addEventListener('DOMContentLoaded', function () {
 		select.addEventListener('change', checkIfNone)
 	}
 
+	function managePlayerPosition() {
+		const select = document.getElementById('ai_player_pos_type') || false
+		if (!select) { return }
+		function checkIfNone() {
+			const el_pos = document.getElementById('ai_player_pos_value').closest('tr')
+			if (select.value === 'top' || select.value === 'n') {
+				console.log('Vendor is None');
+				el_pos.style.display = 'none'
+			} else {
+				el_pos.style.display = 'table-row'
+			}
+		}
+		checkIfNone()
+		select.addEventListener('change', checkIfNone)
+	}
+
 	/* Add Events per Page */
 
 	function addEventsPageSettings() {
 		manageServiceVendor()
+		managePlayerPosition()
 	}
 
 	function addEventsPageNarrations() {
