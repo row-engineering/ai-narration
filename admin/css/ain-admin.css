@@ -290,6 +290,7 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 }
 
 .ain-admin-page select {
+	padding-right: 25px;
 	min-width: 120px;
 	height: 32px;
 }
