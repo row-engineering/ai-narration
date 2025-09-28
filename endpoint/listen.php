@@ -7,7 +7,7 @@
 header('Content-Type: application/json; charset=utf-8');
 
 require dirname(__DIR__) . '/configuration.php';
-require BASE_PATH . '/wp-load.php';
+require AI_NARRATION_BASE_PATH . '/wp-load.php';
 require dirname(__DIR__) . '/endpoint/class-ai-narration-endpoint.php';
 
 function listen() {

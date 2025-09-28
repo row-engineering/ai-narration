@@ -3,6 +3,12 @@
  * included in this file.
  */
 
+/* WOrdPress Menu */
+
+#toplevel_page_ai-narration-settings img {
+	margin: 0px 10px;
+}
+
 /* Header and Navigation */
 
 .ain-admin-page a {
@@ -13,7 +19,13 @@
 	clear: both;
 	font-size: 12px;
 	font-style: normal;
-	margin-bottom: 10px;
+	margin-bottom: 0;
+}
+
+.ain-admin-page p.description code {
+	font-size: 11px;
+	background: rgba(0, 0, 0, .03);
+	padding: 3px 3px 2px;
 }
 
 .ain-admin-page .notice.is-dismissible {
@@ -23,6 +35,8 @@
 .ain-admin-page #wpcontent {
 	line-height: 140%;
 }
+
+/* Toolbar / Navigation */
 
 #wpcontent .ain-admin-toolbar {
 	box-sizing: border-box;
@@ -106,7 +120,7 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 }
 
 .ain-admin-toolbar h2 {
-	display: none;
+	margin: 0 1.5em 0 0em;
 	color: #f9fafb;
 }
 
@@ -140,6 +154,41 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 .ain-admin-toolbar .ain-tab:hover {
 	background-color: #475467;
 	color: #f9fafb;
+}
+
+@media (max-width: 375px) {
+	#wpcontent .ain-admin-toolbar {
+		height: 64px;
+		padding-top: 14px;
+		padding-bottom: 14px;
+		margin-left: -30px;
+	}
+
+	.ain-admin-toolbar .ain-logo {
+		margin-right: 14px;
+	}
+
+	.ain-admin-toolbar .ain-logo img {
+		height: 26px;
+	}
+
+	.ain-admin-toolbar .ain-nav-wrap {
+		overflow: hidden;
+	}
+
+	.ain-admin-toolbar div.ain-nav-wrap>h2,
+	.ain-admin-toolbar .ain-nav-promo-wrap {
+		display: none !important;
+	}
+
+	.ain-admin-toolbar .ain-tab {
+		font-size: 12px;
+		padding-left: 8px;
+		padding-right: 8px;
+		padding-top: 6px;
+		padding-bottom: 6px;
+		min-height: 30px;
+	}
 }
 
 /* Pro */
@@ -218,10 +267,6 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 
 /* Form Labels */
 
-.form-table th {
-	padding-top: 26px;
-}
-
 /* Elements: input, textarea, select */
 
 .ain-admin-page input[type="text"]:read-only {
@@ -235,9 +280,8 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 .ain-admin-page textarea,
 .ain-admin-page select {
 	box-sizing: border-box;
-	height: 40px;
-	padding-right: 12px;
-	padding-left: 12px;
+	padding-right: 8px;
+	padding-left: 8px;
 	background-color: #fff;
 	border-color: #d0d5dd;
 	box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.1);
@@ -246,12 +290,13 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 }
 
 .ain-admin-page select {
+	padding-right: 25px;
 	min-width: 120px;
 	height: 32px;
 }
 
 .ain-admin-page textarea {
-	height: 50px;
+	line-height: 1.8em;
 }
 
 .ain-admin-page input[type="checkbox"] {
@@ -296,4 +341,24 @@ acf-admin-toolbar .ain-admin-toolbar-inner .ain-nav-wrap {
 
 .ain-admin-page .wp-list-table input[type="checkbox"] {
 	margin: 0 0 10px 12px;
+}
+
+/* Page specific */
+
+/* Page: Narrations */
+
+#ain-page-narrations>.tablenav {
+	margin-top: 16px;
+}
+
+/* Page: Exclusions */
+
+.ain-section-exclusions table fieldset {
+	column-count: 2;
+}
+
+@media (min-width: 768px) {
+	.ain-section-exclusions table fieldset {
+		column-count: 4;
+	}
 }

@@ -12,9 +12,8 @@
  * @subpackage AI_Narration/admin/partials
  */
 ?>
-<!-- This file should primarily consist of HTML with a little bit of PHP. -->
 
-<div id="ain-page-documentation" class="wrap">
+<div class="wrap" id="ain-page-documentation">
 	<div class="ain-box ain-section ain-section-status ain-w3">
 		<h2>Setup</h2>
 		<p>Hello.</p>

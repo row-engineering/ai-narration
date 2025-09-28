@@ -1,11 +1,14 @@
 <?php
 
-// /wp-content/plugins/ai-narration/endpoint/generate.php
+/**
+ * This is a publicaly accessible endpoint used by the plugin to independenlty generate narrations.
+ */
 
-if (!defined('BASE_PATH')) {
-	define('BASE_PATH', realpath($_SERVER['DOCUMENT_ROOT']));
+if (!defined('AI_NARRATION_BASE_PATH')) {
+	define('AI_NARRATION_BASE_PATH', realpath($_SERVER['DOCUMENT_ROOT']));
 }
-require BASE_PATH . '/wp-load.php';
+
+require AI_NARRATION_BASE_PATH . '/wp-load.php';
 
 $post_id = $_GET['p'];
 if (!$post_id) {
@@ -21,7 +24,10 @@ if (!$post) {
 
 global $plugin_public;
 
-$response = $plugin_public->request_new_audio('publish', 'draft', $post);
+$plugin        = new AI_Narration();
+$plugin_public = new AI_Narration_Public( $plugin->get_plugin_name(), $plugin->get_version() );
+$response      = $plugin_public->request_new_audio('publish', 'draft', $post);
+
 // echo '<pre style="white-space: break-spaces">';
 // var_dump(json_encode($response));
 // echo '</pre>';

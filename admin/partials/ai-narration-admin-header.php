@@ -1,20 +1,22 @@
 <?php
 
+$page_type = 'admin.php';
+$menu_nested = get_option( 'ai_narration_menu_nested' );
+if ($menu_nested) {
+	$page_type = 'options-general.php';
+}
+
 $submenu_html = '';
 foreach($this->pages as $key => $page) {
 	$activeClass = ($page_name === $key) ? ' is-active' : '';
-	$submenu_html .= implode("", array(
-		"\n<a class=\"ain-tab {$activeClass}\" href=\"/wp-admin/admin.php?page={$this->plugin_name}-{$key}\">",
+	$submenu_html .= implode('', array(
+		"\n<a class=\"ain-tab {$activeClass}\" href=\"/wp-admin/{$page_type}?page={$this->plugin_name}-{$key}\">",
 			"{$page['title']}",
 		"</a>"
 	));
 }
 
 ?>
-<style>
-
-
-</style>
 
 <div class="ain-admin-page">
 
@@ -22,10 +24,10 @@ foreach($this->pages as $key => $page) {
 		<div class="ain-admin-toolbar-inner">
 			<div class="ain-nav-wrap">
 				<a href="/wp-admin/admin.php?page=ain-settings" class="ain-logo">
-					<img src="/wp-content/plugins/<?= $this->plugin_name; ?>/assets/images/ain-logo.svg" alt="AI Narration plugin logo" title="AI Narration">
+					<img src="/wp-content/plugins/<?= $this->plugin_name; ?>/assets/images/logo.svg" alt="AI Narration plugin logo" title="AI Narration">
 					<!-- <div class="ain-pro-label">PRO</div> -->
 				</a>
-				<h2>AI Narration</h2>
+				<h2>AI Narrations</h2>
 				<?= $submenu_html; ?>
 			</div>
 			<div class="ain-nav-promo-wrap">
