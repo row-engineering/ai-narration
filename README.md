@@ -1,52 +1,66 @@
 # AI Narration
 
-A WordPress plugin to enable AI-generated audio of posts, to boost accessibility, engagement, and reach.
+A WordPress plugin that converts your posts into audio narrations using AI text-to-speech services, making your content more accessible and engaging for your audience.
+
+This plugin is actively used and maintained by [Rest of World](https://restofworld.org/).
+
+## Overview
+
+**Out of the box:** This plugin creates audio files for your WordPress posts using AI text-to-speech and adds a responsive audio player to each post. Visitors can listen to your content instead of (or alongside) reading it.
+
+**How it works:** The plugin processes your post content (headings and paragraphs) and generates multiple MP3 files that play seamlessly together. Content is split into smaller audio segments to ensure fast loading - your readers don't have to wait for one large file to download before they can start listening.
+
+**Content processing:** Only heading and paragraph blocks are converted to audio. Other elements (images, galleries, etc.) are skipped, with natural pauses added between sections for a smooth listening experience.
+
+### Important Limitations & Requirements
+
+- Requires [OpenAI API key](https://platform.openai.com/docs/guides/text-to-speech) and account - You'll need to sign up with OpenAI and pay for TTS usage
+- Currently supports OpenAI only - Other TTS services may be added in future versions
+- Manual setup required - You'll need to configure API keys and may need to specify information to identify post content
+- Storage space - Audio files are stored locally on your server
+- Theme compatibility - May require CSS selector adjustment if your theme uses non-standard post markup
+
+## Key Features
+
+- OpenAI Text-to-Speech integration with multiple voice options
+- Responsive audio player that works on all devices
+- Flexible generation - Create narrations manually or automatically on post publish
+- Bulk narration generation for existing content
+- Customizable intro/outro messages for each narration
+- Developer-friendly with hooks and filters for customization
+- Local hosting - Audio files stored on your server (no third-party dependencies for playback)
 
 ## Instalation
 
-1) Install the plugin
 - In WordPress admin go to _Plugins > Add New > Upload Plugin_
 - Choose the plugin zip and click _Install Now_
 - Click _Activate_
+- _Narrations_ should appear in the menu
 
-2) Confirm it is active
-- You should see it listed under Plugins as Active
-- A new settings page will appear under Settings or in the left menu
+### Minimum Configuration
 
-### Minimum setup in Settings
+Go to the plugin settings page.
 
-1) Choose the service
-- Select your TTS or narration service from the dropdown.
-- For now Open AI is the only one supported
+- **Choose service:** Select "OpenAI" (currently the only option)
+- **Add API key:** Paste your OpenAI API key and save
+- **Select voice:** Choose from available OpenAI voices
+- **Post content selector:** Default is `.entry-content` - change this if your theme uses different markup
 
-2) Add API key
-- Paste the key for the chosen service. Save.
+Click _Update_ to save changes
 
-3) Choose a Voice
-- The most commons ones known for each service are listed.
+We recommend that you only enable _Auto-Generate on Publish_ after manually generating a test narration.
 
-4) Base directory
-- Confirm the base directory where narration assets will be stored or read from. Adjust if your site uses a custom path.
+The other settings should be self-explanatory but we will update this document with mroe specifics in time.
 
-5) Post content selector
-- The default selector is `.entry-content` and works with default themes. If your post is a custom template this might have been changed and you will need to provide it here.
+### Requirements
 
-
-That’s all you need for a basic run. Create or view a single post that has a narration index and the script will load.
-
-Full explanations for all settings will be added later.
-
-## Supporting AI Narration
-
-AI Narration is an open source project with its ongoing development made possible entirely by the engineering team at Rest of World - and potentially others in the future. If you'd like to support these efforts, please consider donation which will also help support our global journalism efforts:
-
-- [Donate to Rest of World](https://restofworld.org/donate/).
-
-Rest of World is a 501(c)(3) nonprofit organization and donations in the USA are tax-deductible.
+- WordPress 6.0+ (Gutenberg support recommended)
+  - Likley works with WP 5+ but untested
+- PHP 7.4+
+- OpenAI API account with TTS access
+- Adequate server storage for audio files
 
 ## Development
-
-Pull requests are encouraged and often welcome. [Pick an issue](https://github.com/row-engineering/ai-audio/issues) or a feature and help us out!
 
 To install and work on AI Narration locally:
 
@@ -55,25 +69,14 @@ cd /path/to/wordpress/wp-content/plugins
 git clone https://github.com/row-engineering/ai-narration.git
 cd ai-narration
 ```
-### PR Guidelines
-
-We are a small team and reviews may not be timley. We also have a narrow focus for this plugin as it actively runs on our site - mostly on security, stability, and improving existing features. We are not looking to add significant features without consultation. With that in mind:
-
-1. Keep It Focused and Atomic: Small PRs please.
-2. Write a Comprehensive PR Description
-- What does this PR solve or introduce?
-- How did you solve it?
-- Any potential side effects or considerations?
-3. Meaningful Commit Messages
-4. Tests: Include tests or detailed documentation
 
 ## Roadmap: 
 
 Our roadmap for this plugin is relatively modest. The core functionality is in place. Our future efforts will be centered around stability, incremental changes, and UX improvements.
 
-We have identified known areas where this plugin falls short and would welcome any help for those.
+We are a small team and reviews may not be timley. We also have a narrow focus for this plugin as it actively runs on our site - mostly on security, stability, and improving existing features. We are not looking to add significant features without consultation.
 
-### Features and Improvements
+### Priority areas for contribution:
 
 - Service Support
   - Adding support for additional AI TTS services by extending the current system
@@ -91,34 +94,98 @@ We have identified known areas where this plugin falls short and would welcome a
 - Security
   - Please get in touch directly if you find a severe issue and we will prioritize those.
 
-## Hooks
+### Contribution guidelines:
 
-#### ain_script_src
+- Keep PRs focused and atomic
+- Include comprehensive descriptions
+- Add tests or detailed documentation
+- Follow existing code standards
 
-The plugin loads `js/ain-public.js` on single posts that have a narration index. Developers can swap that file using a filter.
+Pull requests are encouraged and often welcome. [Pick an issue](https://github.com/row-engineering/ai-audio/issues) or a feature and help us out!
 
-Basic override example (from a theme or mu plugin):
+## Technical Details
 
+### Content Processing
+
+- Processes specific Gutenberg blocks: heading, paragraph, and seperator blocks
+- Skips multimedia, shortcodes, and all other blocks blocks
+- Compatible with Classic Editor paragraph content
+- Adds natural pauses between sections using separator elements
+
+### File Management
+
+When narrations are generated, the plugin creates:
+- MP3 files: Individual audio segments (`audio_01.mp3`, `audio_02.mp3`, etc.)
+- JSON metadata file: `index.json` contains the same data structure as the inline JavaScript (see below)
+  - The JSON file can be used for external integrations or caching strategies.
+- Directory structure: `/wp-content/narrations/YYYY/post-slug/`
+
+### Data Structure
+The plugin inserrts inline JavaScript data via a varaibel in global namespace to each Post that has a narration. This mirrors the data from the JSON file created for each narration. The player relies on this for rendering and playback:
+
+```
+<script id='ai-narration-data'>
+window.AINarrationData = {
+    "id": 88241,
+    "title": "My mom and Dr. DeepSeek",
+    "date": "2025-09-02 06:00:00",
+    "url": "https:\/\/restofworld.org\/2025\/ai-chatbot-china-sick\/",
+    "slug": "ai-chatbot-china-sick",
+    "authors": [ "Viola Zhou" ],
+    "audio": {
+		    "service": "OpenAI TTS",
+		    "model": "tts-1",
+		    "voice": "shimmer",
+		    "created": "1757088590.149598",
+		    "total": 8,
+		    "duration": [ 203, 247, 257, 240, 246, 245, 235, 41 ],
+		    "tracks": [
+            "\/wp-content\/narrations\/2025\/ai-chatbot-china-sick\/audio_01.mp3",
+            // ... additional tracks
+            "\/wp-content\/narrations\/2025\/ai-chatbot-china-sick\/audio_08.mp3"
+        ]
+    },
+    "config": {
+        "cdn": "",
+        "link": "\/about\/ai-narrations\/",
+        "selector": "main .entry-content",
+        "position": [false, 0]
+    }
+}
+</script>
+```
+Example story: [My mom and Dr. DeepSeek](https://restofworld.org/2025/ai-chatbot-china-sick/)
+
+## Developer Customization
+
+`ain_script_src`
+
+Override the player JavaScript file:
 ```
 add_filter('ain_script_src', function ($src, $post) {
   return get_stylesheet_directory_uri() . '/js/ain-narration-custom.js';
 }, 10, 2);
 ```
 
-Return a full URL to your custom script. Return an empty string to skip loading.
+`ain_styles_src`
 
-
-#### ain_styles_src
-
-The plugin loads `css/ain-public.css` on single posts that have a narration index. Developers can swap that file using a filter.
-
-Basic override example (from a theme or mu plugin):
-
+Override the player CSS file:
 ```
 add_filter('ain_script_src', function ($src, $post) {
   return get_stylesheet_directory_uri() . '/css/ain-narration-custom.css';
 }, 10, 2);
 ```
+
+
+
+## Supporting AI Narration
+
+AI Narration is an open source project with its ongoing development made possible entirely by the engineering team at [Rest of World](https://restofworld.org/) - and potentially others in the future. If you'd like to support these efforts, please consider donation which will also help support our global journalism efforts:
+
+- [Donate to Rest of World](https://restofworld.org/donate/).
+
+Rest of World is a 501(c)(3) nonprofit organization and donations in the USA are tax-deductible.
+
 ## Change Log
 
 [View the change log](https://github.com/row-engineering/ai-narration/blob/master/CHANGELOG.md).
