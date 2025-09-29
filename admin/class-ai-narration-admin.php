@@ -471,22 +471,26 @@ class AI_Narration_Admin {
 	 */
 	public function post_lookup() {
 		global $wpdb;
-		$search = like_escape($_REQUEST['q']);
-		$query = 'SELECT ID,post_title FROM ' . $wpdb->posts . '
-			WHERE post_title LIKE \'%' . $search . '%\'
-			AND post_type = \'post\'
-			AND post_status = \'publish\'
-			ORDER BY post_title ASC LIMIT 10';
+		$search = sanitize_text_field($_REQUEST['q']);
+		$search = esc_like($search);
+		$query = $wpdb->prepare(
+			"SELECT ID,post_title FROM {$wpdb->posts}
+			WHERE post_title LIKE %s
+			AND post_type = 'post'
+			AND post_status = 'publish'
+			ORDER BY post_title ASC LIMIT 10",
+			'%' . $search . '%'
+		);
 		foreach ($wpdb->get_results($query) as $row) {
-			$title = $row->post_title;
-			$id = $row->ID;
+			$title = esc_html($row->post_title);
+			$id = intval($row->ID);
 			echo "$title ($id)\n";
 		}
 		die();
 	}
 
 	public function tag_lookup() {
-		$search = like_escape($_REQUEST['q']);
+		$search = sanitize_text_field($_REQUEST['q']);
 		$args = array(
 			'taxonomy'   => 'post_tag',
 			'hide_empty' => false,
@@ -494,8 +498,8 @@ class AI_Narration_Admin {
 		);
 		$tags = get_terms($args);
 		foreach ($tags as $tag) {
-			$name = $tag->name;
-			$id = $tag->term_id;
+			$name = esc_html($tag->name);
+			$id = intval($tag->term_id);
 			echo "$name ($id)\n";
 		}
 		die();

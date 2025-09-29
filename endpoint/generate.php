@@ -10,9 +10,9 @@ if (!defined('AI_NARRATION_BASE_PATH')) {
 
 require AI_NARRATION_BASE_PATH . '/wp-load.php';
 
-$post_id = $_GET['p'];
+$post_id = isset($_GET['p']) ? absint($_GET['p']) : 0;
 if (!$post_id) {
-	echo 'Make sure URL includes a post ID, e.g. generate.php?p=76333';
+	echo 'Make sure URL includes a valid post ID, e.g. generate.php?p=76333';
 	return;
 }
 
