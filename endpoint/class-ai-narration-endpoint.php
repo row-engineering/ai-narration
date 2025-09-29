@@ -85,7 +85,7 @@ class AI_Narration_Endpoint {
 		$year = $date->format('Y');
 		$dir = "/$year/{$data['slug']}";
 		if ( !is_dir(AI_NARRATION_PATH . $dir) ) {
-			if ( !mkdir(AI_NARRATION_PATH . $dir, 0777, true) ) {
+			if ( !mkdir(AI_NARRATION_PATH . $dir, 0755, true) ) {
 				$dir = false;
 			}
 		}
