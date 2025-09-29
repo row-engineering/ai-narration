@@ -46,7 +46,7 @@ Go to the plugin settings page.
 - **Select voice:** Choose from available voices
 - **Post content selector:** Default is `.entry-content` - change this if your theme uses different markup
 
-Click _Update_ to save changes
+Click _Save Changes_.
 
 We recommend that you only enable _Auto-Generate on Publish_ after manually generating a test narration.
 
@@ -171,7 +171,7 @@ add_filter('ain_script_src', function ($src, $post) {
 
 Override the player CSS file:
 ```
-add_filter('ain_script_src', function ($src, $post) {
+add_filter('ain_styles_src', function ($src, $post) {
   return get_stylesheet_directory_uri() . '/css/ain-narration-custom.css';
 }, 10, 2);
 ```
