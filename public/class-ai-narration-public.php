@@ -721,7 +721,11 @@ class AI_Narration_Public {
 		$src = apply_filters('ain_styles_src', $src, $post);
 		if (!$src) return;
 
-		wp_enqueue_style( $this->plugin_name, $src, array(), $this->version, 'all' );
+		$version = $this->version;
+		$version = apply_filters('ain_styles_version', $this->version, $post);
+		if (!$version) $version = $this->version;
+
+		wp_enqueue_style( $this->plugin_name, $src, array(), $version, 'all' );
 	}
 
 	/**
@@ -740,7 +744,11 @@ class AI_Narration_Public {
 		$src = apply_filters('ain_script_src', $src, $post);
 		if (!$src) return;
 
-		wp_enqueue_script( $this->plugin_name, $src, array(), $this->version, false );
+		$version = $this->version;
+		$version = apply_filters('ain_script_version', $this->version, $post);
+		if (!$version) $version = $this->version;
+
+		wp_enqueue_script( $this->plugin_name, $src, array(), $version, false );
 	}
 
 	public function enqueue_svg_sprite() {
