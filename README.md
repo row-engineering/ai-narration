@@ -163,7 +163,7 @@ Example story: [My mom and Dr. DeepSeek](https://restofworld.org/2025/ai-chatbot
 Override the player JavaScript file:
 ```
 add_filter('ain_script_src', function ($src, $post) {
-  return get_stylesheet_directory_uri() . '/js/ain-narration-custom.js';
+  return get_stylesheet_directory_uri() . '/js/narration-custom.js';
 }, 10, 2);
 ```
 
@@ -172,11 +172,9 @@ add_filter('ain_script_src', function ($src, $post) {
 Override the player CSS file:
 ```
 add_filter('ain_styles_src', function ($src, $post) {
-  return get_stylesheet_directory_uri() . '/css/ain-narration-custom.css';
+  return get_stylesheet_directory_uri() . '/css/narration-custom.css';
 }, 10, 2);
 ```
-
-
 
 ## Supporting AI Narration
 
