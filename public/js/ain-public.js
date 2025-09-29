@@ -7,7 +7,6 @@
 			this.articleEl     = articleEl
 			this.data          = ainData
 			this.config        = this.data.config
-			this.selector      = this.data.config.selector
 			this.position      = this.data.config.position
 
 			this.files         = this.data.audio.tracks
