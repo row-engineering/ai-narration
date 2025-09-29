@@ -64,6 +64,8 @@
 
 .ain-player button {
 	cursor: pointer;
+	background-color: transparent;
+	border: 0;
 }
 
 .ain-player button:focus {
@@ -156,9 +158,8 @@
 
 .ain-player .ain-player__about {
 	color: var(--ash, #555555);
-	font-size: 1.2rem;
+	font-size: 0.9rem;
 	line-height: 1;
-	border-bottom: 1px solid var(--ash, #555555);
 }
 
 @media (hover: hover) {

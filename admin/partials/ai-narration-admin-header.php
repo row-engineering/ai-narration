@@ -9,7 +9,7 @@ if ($menu_nested) {
 $submenu_html = '';
 foreach($this->pages as $key => $page) {
 	$activeClass = ($page_name === $key) ? ' is-active' : '';
-	$submenu_html .= implode("", array(
+	$submenu_html .= implode('', array(
 		"\n<a class=\"ain-tab {$activeClass}\" href=\"/wp-admin/{$page_type}?page={$this->plugin_name}-{$key}\">",
 			"{$page['title']}",
 		"</a>"
@@ -17,10 +17,6 @@ foreach($this->pages as $key => $page) {
 }
 
 ?>
-<style>
-
-
-</style>
 
 <div class="ain-admin-page">
 
@@ -33,6 +29,7 @@ foreach($this->pages as $key => $page) {
 				</a>
 				<h2>AI Narrations</h2>
 				<?= $submenu_html; ?>
+				<a class="ain-tab external" href="https://github.com/row-engineering/ai-narration/blob/main/README.md" target="_blank">Documentation</a>
 			</div>
 			<div class="ain-nav-promo-wrap">
 				<a href="https://restofworld.org/?utm_source=acf_plugin&amp;utm_medium=referral&amp;utm_campaign=bx_prod_referral&amp;utm_content=acf_pro_plugin_topbar_logo" target="_blank" class="ain-nav-row-logo">

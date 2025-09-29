@@ -175,8 +175,11 @@ class AI_Narration_Public {
 		return $excl_terms;
 	}
 
-	private function get_cutoff_date() {
-		$cutoff_date = '1111-11-11 12:00:01';
+	/**
+	 * Determines whether a post will be eligible for narration
+	 */
+	public function get_cutoff_date() {
+		$cutoff_date = '2000-11-11 12:00:00';
 
 		$ain_cutoff_date = trim( get_option( 'ai_narration_cutoff' ) );
 		if ( !empty($ain_cutoff_date) ) {
@@ -184,7 +187,7 @@ class AI_Narration_Public {
 				$date_parts = explode('-', $ain_cutoff_date);
 				$date_valid = checkdate($date_parts[1], $date_parts[2], $date_parts[0]);	// (month, day, year)
 				if ($date_valid) {
-					$cutoff_date = $ain_cutoff_date . ' 12:00:01';
+					$cutoff_date = $ain_cutoff_date . ' 12:00:00';
 				}
 			}
 		}
@@ -322,7 +325,7 @@ class AI_Narration_Public {
 			}
 		} else {
 			$response = array(
-				'status' => 6,
+				'status'  => 6,
 				'message' => 'Post must be newly published.'
 			);
 		}
@@ -407,6 +410,9 @@ class AI_Narration_Public {
 		$current_group = 0;
 		$current_text  = '';
 
+	//	TODO: Add 'limit' for OpenAI to the cofniguration
+	//	TODO: Add settings and hook to set a custom character count (within a services limit)
+
 		$max_words  = 2000;
 		$max_chars  = 4096;	// OpenAI limit
 
@@ -420,7 +426,10 @@ class AI_Narration_Public {
 							$block_words = str_word_count($block_content);
 							$block_chars = strlen($block_content);
 
-							/* The first MP3 file should be a smaller filesize and therefore shorter */
+							/* 
+							The first MP3 file should be a smaller filesize and therefore shorter.
+							This is so it can load faster, after that preloading larger files is easy
+							*/
 							$len = ($current_group === 0) ? 600 : $max_words;
 
 							if (str_word_count($current_text) + $block_words > $len || strlen($current_text) + $block_chars > $max_chars) {
@@ -492,11 +501,23 @@ class AI_Narration_Public {
 							'timeout' => 180,
 						)
 					);
-					$response_body = json_decode($request['body'], true);
-					$response = array(
-						'status' => $request['response']['code'],
-						'message' => $response_body['data']['message'],
-					);
+					if ( is_wp_error($request) ) {
+						$response = array(
+							'status'  => 'error',
+							'message' => $request->get_error_message()
+						);
+					} else if ( $request['response']['code'] !== 200 ) {
+						$response = array(
+							'status'  => $request['response']['code'],
+							'message' => 'Error from listen endpoint'
+						);
+					} else {
+						$response_body = json_decode($request['body'], true);
+						$response = array(
+							'status' => $request['response']['code'],
+							'message' => $response_body['data']['message'],
+						);
+					}
 				} else {
 					$response = array(
 						'status'  => 5,
@@ -567,22 +588,49 @@ class AI_Narration_Public {
 
 		if ( !is_single() ) return;
 
+		$player_pos_type = get_option('ai_player_pos_type');
+		if (!empty($player_pos_type) && isset($player_pos_type[0])) {
+			$player_pos_type = $player_pos_type[0];
+			if ($player_pos_type === 'n') {
+				return;
+			}
+		}
+
 		$this->get_post_info();
 		$post_eligibility = $this->is_post_eligible();
+
 		if ( $post_eligibility['status'] === 200 ) {
 			if ( $index_file = $this->get_index_file($this->post) ) {
 				$narration_json = file_get_contents($index_file);
 				$narration_data = json_decode($narration_json, true);
 				if ( $narration_data['audio']['total'] === count($narration_data['audio']['tracks']) ) {
+
+					$cdn              = get_option('ai_cdn');
+					$player_pos_value = get_option('ai_player_pos_value');
+					if (empty($player_pos_value)) {
+						$player_pos_value = 0;
+					}
+
 					$narration_data['config'] = array(
-						'cdn'           => trim(get_option('cdn'), '/'),
-						'learnMoreLink' => get_option('learn_more_link')
+						'cdn'      => trim($cdn, '/'),
+						'link'     => get_option('ai_learn_link'),
+						'selector' => $this->get_post_selector(),
+						'position' => array( $player_pos_type, $player_pos_value )
 					);
+
 					$narration_json = json_encode($narration_data);
-					echo "<script id='ai-narration-data'>window.AINarrationData = $narration_json</script>";
+					echo "\n<script id='ai-narration-data'>\nwindow.AINarrationData = $narration_json\n</script>\n";
 				}
 			}
 		}
+	}
+
+	private function get_post_selector() {
+		$post_selector = trim( get_option('ai_post_selector') );
+		if (empty($post_selector)) {
+			$post_selector = 'main .entry-content';
+		}
+		return $post_selector;
 	}
 
 	public function output_audio_schema($schema) {
@@ -667,9 +715,13 @@ class AI_Narration_Public {
 		if (!is_single()) return;
 
 		$has_narration = $this->get_index_file($post);
-		if ( $has_narration ) {
-			wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ain-public.css', array(), $this->version, 'all' );
-		}
+		if (!$has_narration) return;
+
+		$src = plugin_dir_url(__FILE__) . 'css/ain-public.css';
+		$src = apply_filters('ain_styles_src', $src, $post);
+		if (!$src) return;
+
+		wp_enqueue_style( $this->plugin_name, $src, array(), $this->version, 'all' );
 	}
 
 	/**
@@ -682,9 +734,13 @@ class AI_Narration_Public {
 		if (!is_single()) return;
 
 		$has_narration = $this->get_index_file($post);
-		if ( $has_narration ) {
-			wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ain-public.js', array(), $this->version, false );
-		}
+		if (!$has_narration) return;
+
+		$src = plugin_dir_url(__FILE__) . 'js/ain-public.js';
+		$src = apply_filters('ain_script_src', $src, $post);
+		if (!$src) return;
+
+		wp_enqueue_script( $this->plugin_name, $src, array(), $this->version, false );
 	}
 
 	public function enqueue_svg_sprite() {
