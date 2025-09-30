@@ -487,8 +487,6 @@ class AI_Narration_Public {
 				// mainly this is an opportunity to pass back a false value and stop the request
 				$data_mod = apply_filters('narration_request', $data);
 
-				// error_log(json_encode(array_map(function($d) { return gettype($d) === 'string' && strlen($d)>197 ? substr($d,0,197).'...' : $d; }, $data)));
-
 				if ( $this->validate_data($data, $data_mod) ) {
 					$request = wp_remote_post(
 						"https://{$_SERVER['HTTP_HOST']}/wp-content/plugins/ai-narration/endpoint/listen.php",
