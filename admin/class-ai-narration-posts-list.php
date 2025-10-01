@@ -29,6 +29,23 @@ class Posts_Narration_List_Table extends WP_List_Table {
 		global $plugin_public;
 		$cutoff_date = $plugin_public->get_cutoff_date();
 
+		$current_page = $this->get_pagenum();
+		$per_page = 20;
+
+		// get total count for pagination
+		$count_args = array(
+			'post_type'   => 'post',
+			'post_status' => 'publish',
+			'date_query'  => array(
+				array(
+					'after' => $cutoff_date
+				)
+			),
+			'posts_per_page' => -1,
+			'fields' => 'ids'
+		);
+		$total_items = count(get_posts($count_args));
+
 		$args = array(
 			'post_type'   => 'post',
 			'post_status' => 'publish',
@@ -37,11 +54,19 @@ class Posts_Narration_List_Table extends WP_List_Table {
 					'after' => $cutoff_date
 				)
 			),
-			'posts_per_page' => -1
+			'posts_per_page' => $per_page,
+			'paged' => $current_page,
+			'offset' => ($current_page - 1) * $per_page
 		);
 
 		$posts = get_posts($args);
 		$this->items = $posts;
+
+		$this->set_pagination_args(array(
+			'total_items' => $total_items,
+			'per_page'    => $per_page,
+			'total_pages' => ceil($total_items / $per_page)
+		));
 	}
 
 	public function get_columns() {
