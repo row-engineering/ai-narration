@@ -23,7 +23,7 @@ This plugin is actively used and maintained by [Rest of World](https://restofwor
 ## Key Features
 
 - **TTS** - OpenAI Text-to-Speech integration with multiple voice options
-- **Fully functioal player** - Responsive audio player that works on all devices
+- **Fully functional player** - Responsive audio player that works on all devices
 - **Flexible generation** - Create narrations manually or automatically on post publish
 - **Bulk Action** - Bulk narration generation for existing content
 - **Customizable** - Custom intro/outro messages for each narration
@@ -44,13 +44,28 @@ Go to the plugin settings page.
 - **Choose service:** Select "OpenAI" (currently the only option)
 - **Add API key:** Paste your OpenAI API key and save
 - **Select voice:** Choose from available voices
-- **Post content selector:** Default is `.entry-content` - change this if your theme uses different markup
+- **Post content selector:** Default is `main .entry-content` - change this if your theme uses different markup
 
 Click _Save Changes_.
 
 We recommend that you only enable _Auto-Generate on Publish_ after manually generating a test narration.
 
-The other settings should be self-explanatory but we will update this document with mroe specifics in time.
+### Additional Configuration
+
+- **Intro & outro text:** Custom text to be read at the beginning or end of each narration. Includes variables for the headline, author and publish date.
+- **Intro & outro MP3:** Paths to custom audio files to be played at the beginning or end of each narration.
+- **Player placement:** Specify where the player should be inserted, as counted by word-count, number of paragraphs, etc.
+- **Learn More link:** A link for an optional 'Learn More' link to appear in the player
+- **CDN:** Serve the audio files from your specified CDN
+
+### Eligibility Criteria
+
+You can customize certain criteria for posts to be eligible for AI narration.
+
+- **Post type**
+- **Tags:** Posts with any of the listed tags will be excluded
+- **Date:** Posts before the given date will be excluded
+- **Word Count:** Posts with fewer than the minimum or more than the maximum specified word counts will be excluded
 
 ### Requirements
 
@@ -74,16 +89,16 @@ cd ai-narration
 
 Our roadmap for this plugin is relatively modest. The core functionality is in place. Our future efforts will be centered around stability, incremental changes, and UX improvements.
 
-We are a small team and reviews may not be timley. We also have a narrow focus for this plugin as it actively runs on our site - mostly on security, stability, and improving existing features. We are not looking to add significant features without consultation.
+We are a small team and reviews may not be timely. We also have a narrow focus for this plugin as it actively runs on our site - mostly on security, stability, and improving existing features. We are not looking to add significant features without consultation.
 
 ### Priority areas for contribution:
 
 - Service Support
   - Adding support for additional AI TTS services by extending the current system
 - WP Admin
-  - A cleaner way to abort, and redo, narration generations.
+  - A cleaner way to abort, and redo, narration generations
 - Internationalization
-  - Any refactoring to better prepare it for language support.
+  - Any refactoring to better prepare it for language support
   - Add support for a second language
 - Actions and Filters
   - Add new actions or filters at logical/useful points. This may be subjective so use your best judgment.
@@ -97,7 +112,7 @@ We are a small team and reviews may not be timley. We also have a narrow focus f
 ### Contribution guidelines:
 
 - Keep PRs focused and atomic
-- Include comprehensive but relevent descriptions
+- Include comprehensive but relevant descriptions
 - Add tests or detailed documentation
 - Follow existing code and formatting standards (tabs, not spaces)
 
@@ -121,7 +136,7 @@ When narrations are generated, the plugin creates:
 - Directory structure: `/wp-content/narrations/YYYY/post-slug/`
 
 ### Data Structure
-The plugin inserrts inline JavaScript data via a varaibel in global namespace to each Post that has a narration. This mirrors the data from the JSON file created for each narration. The player relies on this for rendering and playback:
+The plugin inserts inline JavaScript data via a variable in global namespace to each Post that has a narration. This mirrors the data from the JSON file created for each narration. The player relies on this for rendering and playback:
 
 ```
 <script id='ai-narration-data'>
@@ -167,6 +182,15 @@ add_filter('ain_script_src', function ($src, $post) {
 }, 10, 2);
 ```
 
+`ain_script_version`
+
+Append a query parameter to your custom JS file to bust browser cache after an update:
+```
+add_filter('ain_script_version', function ($version, $post) {
+	return $version . random_cache_param();
+}, 10, 2);
+```
+
 `ain_styles_src`
 
 Override the player CSS file:
@@ -174,6 +198,47 @@ Override the player CSS file:
 add_filter('ain_styles_src', function ($src, $post) {
   return get_stylesheet_directory_uri() . '/css/narration-styles.css';
 }, 10, 2);
+```
+
+`ain_styles_version`
+
+Append a query parameter to your custom CSS file to bust browser cache after an update:
+```
+add_filter('ain_styles_version', function ($version, $post) {
+	return $version . random_cache_param();
+}, 10, 2);
+```
+
+`narration_request`
+
+Add your own filters to disqualify a post from AI narration.
+```
+add_filter('narration_request', function ( $data = array() ) {
+	$post_id = $data['id'];
+	$article_flags = get_article_flags($post_id);
+
+	// If post has force-include-ai-narration flag, generate despite other exclusion params
+	if ( in_array('force-include-ai-narration', $article_flags) ) {
+		error_log("Post $post_id has the force-include-ai-narration flag.");
+		return $data;
+	}
+
+	// Must not have exclude-from-ai-narration flag
+	if ( in_array('exclude-from-ai-narration', $article_flags) ) {
+		error_log("Post $post_id has the exclude-from-ai-narration flag.");
+		return false;
+	}
+
+	// Must use Regular, Medium or Full template
+	$template = get_field('row_post_template', $post_id);
+	$accepted_templates = array('regular', 'medium', 'full');
+	if ( !in_array( $template, $accepted_templates ) ) {
+		error_log("Post $post_id is not using one of the supported templates: Regular, Medium or Full.");
+		return false;
+	}
+
+	return $data;
+}, 10, 1);
 ```
 
 ## Supporting AI Narration
