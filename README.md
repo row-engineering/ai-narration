@@ -116,7 +116,7 @@ We are a small team and reviews may not be timely. We also have a narrow focus f
 - Add tests or detailed documentation
 - Follow existing code and formatting standards (tabs, not spaces)
 
-Pull requests are encouraged and often welcome. [Pick an issue](https://github.com/row-engineering/ai-audio/issues) or a feature and help us out!
+Pull requests are encouraged and often welcome. [Pick an issue](https://github.com/row-engineering/ai-narration/issues) or a feature and help us out!
 
 ## Technical Details
 
