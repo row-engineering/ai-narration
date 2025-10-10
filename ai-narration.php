@@ -11,7 +11,7 @@
  * Description:       Generate natural-sounding audio for your posts, making your content more accessible and engaging for readers.
  * Version:           1.0.0
  * Author:            Anna Rasshivkina, Michael Donohoe
- * Author URI:        https://https://github.com/row-engineering
+ * Author URI:        https://github.com/row-engineering
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       ai-audio
