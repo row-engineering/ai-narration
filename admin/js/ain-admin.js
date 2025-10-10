@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	function updateStatus(message){
 		const el = document.getElementById('ain-status') || false
-		if (el) { el.innerText = message || ' ' }
+		// if (el) { el.innerText = message || ' ' }
 	}
 
 	async function generateNarration(posts) {
