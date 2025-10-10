@@ -3,10 +3,14 @@
  * included in this file.
  */
 
-/* WOrdPress Menu */
+/* WordPress Menu */
 
 #toplevel_page_ai-narration-settings img {
 	margin: 0px 10px;
+}
+
+#toplevel_page_ai-narration-settings #wpbody-content .update-nag {
+    margin-bottom: 25px; /* WP Update note */
 }
 
 /* Header and Navigation */
