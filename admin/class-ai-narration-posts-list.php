@@ -94,7 +94,7 @@ class Posts_Narration_List_Table extends WP_List_Table {
 	}
 
 	protected function column_date($item) {
-		return get_the_date('', $item->ID);
+		return get_the_date('M d, Y', $item->ID);
 	}
 
 	protected function column_actions($post) {
