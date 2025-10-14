@@ -26,7 +26,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Current plugin version.
  * Start at version 1.0.0 and use SemVer - https://semver.org
  */
-define( 'AI_NARRATION_VERSION', '1.1.7' );
+define( 'AI_NARRATION_VERSION', '1.1.8' );
 
 define( 'AI_NARRATION_BASENAME', plugin_basename( __FILE__ ) );
 
