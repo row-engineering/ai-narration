@@ -4,7 +4,13 @@
 		 * INITIALIZE *
 		 **************/
 		constructor(ainData, articleEl) {
-			this.articleEl     = articleEl
+
+			this.articleEl = articleEl
+			if (!this.articleEl) {
+				console.log('No article recognized')
+				return
+			}
+
 			this.data          = ainData
 			this.config        = this.data.config
 			this.position      = this.data.config.position
@@ -36,7 +42,13 @@
 		}
 
 		insertPlayer() {
+
 			const paragraphs = this.articleEl.querySelectorAll('p')
+			if (!paragraphs.length) {
+				console.log('No paragraphs recognized')
+				return
+			}
+
 			let insertionPt = null
 
 		//	Top of Post
