@@ -12,6 +12,8 @@ This plugin is actively used and maintained by [Rest of World](https://restofwor
 
 **Content processing:** Only heading and paragraph blocks are converted to audio. Other elements (images, galleries, etc.) are skipped, with natural pauses added between sections for a smooth listening experience.
 
+![Four screenshots of AI Narration plugin, showing the WP Admin screens, and regular and sticky player in an article.](https://fastly.restofworld.org/uploads/2025/10/ain-preview-screens-transparent-scaled.png?width=700&dpr=2)
+
 ### Important Limitations & Requirements
 
 - Requires [OpenAI API key](https://platform.openai.com/docs/guides/text-to-speech) and account - You'll need to sign up with OpenAI and pay for TTS usage
@@ -31,7 +33,8 @@ This plugin is actively used and maintained by [Rest of World](https://restofwor
 - **Local hosting** - Audio files stored on your server (no third-party dependencies for playback)
 
 ## Installation
-
+- Download the [ai-narration-main.zip](https://github.com/row-engineering/ai-narration/archive/refs/heads/main.zip) file and unzip it in your WordPress _plugins_ directory
+- Rename it as _ai-narration_
 - In WordPress admin go to _Plugins > Add New > Upload Plugin_
 - Choose the plugin zip and click _Install Now_
 - Click _Activate_
@@ -138,7 +141,7 @@ When narrations are generated, the plugin creates:
 ### Data Structure
 The plugin inserts inline JavaScript data via a variable in global namespace to each Post that has a narration. This mirrors the data from the JSON file created for each narration. The player relies on this for rendering and playback:
 
-```
+```javascript
 <script id='ai-narration-data'>
 window.AINarrationData = {
     "id": 88241,
@@ -176,7 +179,7 @@ Example story: [My mom and Dr. DeepSeek](https://restofworld.org/2025/ai-chatbot
 `ain_script_src`
 
 Override the player JavaScript file:
-```
+```php
 add_filter('ain_script_src', function ($src, $post) {
   return get_stylesheet_directory_uri() . '/js/narration-script.js';
 }, 10, 2);
@@ -185,7 +188,7 @@ add_filter('ain_script_src', function ($src, $post) {
 `ain_script_version`
 
 Append a query parameter to your custom JS file to bust browser cache after an update:
-```
+```php
 add_filter('ain_script_version', function ($version, $post) {
 	return $version . random_cache_param();
 }, 10, 2);
@@ -194,7 +197,7 @@ add_filter('ain_script_version', function ($version, $post) {
 `ain_styles_src`
 
 Override the player CSS file:
-```
+```php
 add_filter('ain_styles_src', function ($src, $post) {
   return get_stylesheet_directory_uri() . '/css/narration-styles.css';
 }, 10, 2);
@@ -203,7 +206,7 @@ add_filter('ain_styles_src', function ($src, $post) {
 `ain_styles_version`
 
 Append a query parameter to your custom CSS file to bust browser cache after an update:
-```
+```php
 add_filter('ain_styles_version', function ($version, $post) {
 	return $version . random_cache_param();
 }, 10, 2);
@@ -212,7 +215,7 @@ add_filter('ain_styles_version', function ($version, $post) {
 `narration_request`
 
 Add your own filters to disqualify a post from AI narration.
-```
+```php
 add_filter('narration_request', function ( $data = array() ) {
 	$post_id = $data['id'];
 	$article_flags = get_article_flags($post_id);
