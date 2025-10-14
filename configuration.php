@@ -4,8 +4,7 @@ if (!defined('AI_NARRATION_BASE_PATH')) {
 	define('AI_NARRATION_BASE_PATH', realpath($_SERVER['DOCUMENT_ROOT']));
 }
 
-define('AI_NARRATION_KEY',  'fskjdhg8765fs!');
-// define('AI_NARRATION_KEY',  ain_get_secret_key() );
+define('AI_NARRATION_KEY',  ain_get_secret_key() );
 
 define('AI_NARRATION_DIR',  '/wp-content/narrations');
 define('AI_NARRATION_PATH', AI_NARRATION_BASE_PATH . AI_NARRATION_DIR);
