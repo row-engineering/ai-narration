@@ -4,6 +4,8 @@ A WordPress plugin that converts your posts into audio narrations using AI text-
 
 This plugin is actively used and maintained by [Rest of World](https://restofworld.org/).
 
+We wrote a blog post with more background information [here](https://restofworld.org/inside/ai-narration-plugin-wordpress/).
+
 ## Overview
 
 **Out of the box:** This plugin creates audio files for your WordPress posts using AI text-to-speech and adds a responsive audio player to each post. Visitors can listen to your content instead of (or alongside) reading it.
